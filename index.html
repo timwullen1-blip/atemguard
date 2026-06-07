@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>AtemGuard - Feuerwehr Einsatz Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -52,6 +52,196 @@
     box-shadow: none;
   }
 }
+
+
+    /* ==================== TABLET-OPTIMIERUNG ==================== */
+    .tablet-quickbar {
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      background: rgba(24, 24, 27, 0.96);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid #3f3f46;
+      padding: 0.75rem 1rem;
+      display: none;
+      gap: 0.75rem;
+      overflow-x: auto;
+    }
+
+    .tablet-quickbar button {
+      white-space: nowrap;
+      min-height: 52px;
+      padding: 0 1.1rem;
+      border-radius: 1rem;
+      font-weight: 800;
+      background: #27272a;
+      border: 1px solid #3f3f46;
+    }
+
+    .tablet-quickbar button.active {
+      background: #dc2626;
+      border-color: #ef4444;
+    }
+
+    button,
+    .touch-button {
+      touch-action: manipulation;
+    }
+
+    @media (max-width: 1180px) {
+      body {
+        font-size: 18px;
+      }
+
+      .max-w-screen-2xl {
+        max-width: 100%;
+      }
+
+      header {
+        position: static !important;
+        padding: 1rem !important;
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 1rem;
+      }
+
+      header > div:first-child {
+        justify-content: center;
+      }
+
+      header h1 {
+        font-size: 2.4rem !important;
+      }
+
+      header > div:last-child {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem !important;
+      }
+
+      header button,
+      header select,
+      header input,
+      #einsatz-status-display {
+        min-height: 58px;
+        font-size: 1.05rem !important;
+      }
+
+      .sticky.top-20 {
+        display: none;
+      }
+
+      .tablet-quickbar {
+        display: flex;
+      }
+
+      .p-8 {
+        padding: 1rem !important;
+      }
+
+      .grid {
+        gap: 1rem !important;
+      }
+
+      #dashboard-trupps,
+      #trupp-list,
+      #atemschutz-container,
+      #building-floors {
+        grid-template-columns: 1fr 1fr !important;
+      }
+
+      .rounded-3xl {
+        border-radius: 1.25rem !important;
+      }
+
+      .trupp-card,
+      #atemschutz-container > div,
+      #dashboard-trupps > div,
+      #building-floors > div {
+        min-height: 180px;
+      }
+
+      button {
+        min-height: 54px;
+        font-size: 1rem;
+      }
+
+      input,
+      select {
+        min-height: 54px;
+        font-size: 1rem;
+      }
+
+      #modal > div,
+      #qr-modal > div,
+      #floor-modal > div {
+        max-width: 92vw !important;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+    }
+
+    @media (max-width: 760px) {
+      header > div:last-child {
+        grid-template-columns: 1fr;
+      }
+
+      #dashboard-trupps,
+      #trupp-list,
+      #atemschutz-container,
+      #building-floors {
+        grid-template-columns: 1fr !important;
+      }
+
+      .tablet-quickbar button {
+        min-width: 150px;
+      }
+    }
+
+    @media (orientation: landscape) and (max-height: 850px) {
+      header {
+        padding: 0.75rem 1rem !important;
+      }
+
+      header h1 {
+        font-size: 2rem !important;
+      }
+
+      .tablet-quickbar {
+        padding: 0.55rem 1rem;
+      }
+
+      .tablet-quickbar button {
+        min-height: 46px;
+      }
+
+      .p-8 {
+        padding-top: 0.75rem !important;
+      }
+    }
+
+    .tablet-focus-mode #tab-0,
+    .tablet-focus-mode #tab-1,
+    .tablet-focus-mode #tab-3 {
+      display: none !important;
+    }
+
+    .tablet-focus-mode #tab-2 {
+      display: block !important;
+    }
+
+    .tablet-focus-mode #atemschutz-container {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .tablet-focus-mode header,
+    .tablet-focus-mode .tablet-quickbar {
+      display: none !important;
+    }
+
+    .tablet-focus-mode .p-8 {
+      padding: 0.75rem !important;
+    }
 
   </style>
 
@@ -1680,6 +1870,21 @@ function getMissionMinutes(trupp) {
       alert("PDF wurde mit vollständigem Zeitstempel-Protokoll heruntergeladen!");
     }
 
+
+    function updateTabletTabButtons(activeIndex) {
+      for (let i = 0; i <= 3; i++) {
+        const btn = document.getElementById(`tablet-tab-${i}`);
+        if (btn) btn.classList.toggle('active', i === activeIndex);
+      }
+    }
+
+    function toggleTabletFocusMode() {
+      document.body.classList.toggle('tablet-focus-mode');
+      if (document.body.classList.contains('tablet-focus-mode')) {
+        showTab(2);
+      }
+    }
+
     // ==================== TABS ====================
     function showTab(n) {
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
@@ -1688,6 +1893,8 @@ function getMissionMinutes(trupp) {
       document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
         btn.classList.toggle('active', idx === n);
       });
+
+      updateTabletTabButtons(n);
     }
 
     // ==================== INITIALISIERUNG ====================
