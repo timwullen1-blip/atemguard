@@ -1,13 +1,13 @@
-# AtemGuard Web Tablet Tabs
+# AtemGuard Tablet Leitstand Fix
 
-Diese Version bleibt bei der normalen Web-Oberflaeche mit Tabs.
+Tablet-Leitstand-Version mit funktionsfähigem Trupp-Löschen.
 
-## Neu
-- Tablet-Tabbar oben
-- Reihenfolge: Atemschutz, Trupps, Gebaeude, Dashboard
-- groessere Buttons fuer Tablet
-- QR-Scan bleibt erhalten
-- keine Leitstand/Split-Screen-Ansicht
+## Wichtig
+- Trupps können über den roten Papierkorb gelöscht werden.
+- Vor dem Löschen erscheint eine Bestätigung.
+- Das Löschen wird protokolliert.
+- QR-Scan bleibt erhalten.
+- Drag-and-Drop bleibt erhalten.
 
 ## Upload
 Alle Dateien aus diesem Ordner in GitHub hochladen und bestehende Dateien ersetzen.
