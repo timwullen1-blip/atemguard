@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#18181b"/>
+  <path d="M256 54l158 58v118c0 101-64 190-158 228C162 420 98 331 98 230V112l158-58z" fill="#dc2626"/>
+  <path d="M256 96l108 40v94c0 72-42 137-108 171-66-34-108-99-108-171v-94l108-40z" fill="#09090b"/>
+  <text x="256" y="290" font-family="Arial, sans-serif" font-size="76" font-weight="700" text-anchor="middle" fill="#ffffff">AG</text>
+  <text x="256" y="345" font-family="Arial, sans-serif" font-size="30" font-weight="700" text-anchor="middle" fill="#ffffff">AtemGuard</text>
+</svg>

@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AtemGuard - Feuerwehr Einsatz Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .tab-btn.active { border-bottom: 4px solid #ef4444; color: white; font-weight: 600; }
+    .floor { transition: all 0.2s; }
+    .floor.dragover { background-color: #22c55e; opacity: 0.8; transform: scale(1.02); }
+    .trupp-card { transition: all 0.2s; }
+    .blink { animation: blink 800ms infinite; }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .status-green { background-color: #22c55e; color: black; }
+    .status-yellow { background-color: #eab308; color: black; }
+    .status-red { background-color: #ef4444; color: white; }
+    .status-black { background-color: #1f2937; color: white; }
+
+.alarm-active {
+  animation: alarmPulse 700ms infinite;
+}
+
+@keyframes alarmPulse {
+  0%, 100% {
+    box-shadow: 0 0 0px #ef4444;
+  }
+  50% {
+    box-shadow: 0 0 24px #ef4444;
+  }
+}
+
+
+.border-warning {
+  border: 3px solid #ef4444 !important;
+  animation: borderBlink 1s infinite;
+}
+
+@keyframes borderBlink {
+  0%, 100% {
+    border-color: #ef4444;
+    box-shadow: 0 0 10px #ef4444;
+  }
+  50% {
+    border-color: transparent;
+    box-shadow: none;
+  }
+}
+
+  </style>
+
+  <meta name="theme-color" content="#dc2626">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="AtemGuard">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.svg">
+
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen">
+  <div class="max-w-screen-2xl mx-auto">
+    <!-- Header -->
+    <header class="bg-zinc-900 border-b border-zinc-800 px-8 py-5 flex items-center justify-between sticky top-0 z-50">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center text-3xl">🛡️</div>
+        <div>
+          <h1 class="text-4xl font-bold tracking-tight text-red-500">AtemGuard</h1>
+          <p class="text-sm text-zinc-400">Einsatz- & Atemschutzüberwachung</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-3 bg-zinc-800 px-5 py-2 rounded-2xl">
+          <div class="text-center">
+            <div class="text-xs text-zinc-400">Einsatz-Nr.</div>
+            <input id="einsatz-nr" value="FW-2026-0742" class="bg-transparent text-xl font-semibold w-32 focus:outline-none text-center">
+          </div>
+          <div class="h-8 w-px bg-zinc-700"></div>
+          <div>
+            <div class="text-xs text-zinc-400">Einsatzart</div>
+            <select id="einsatz-art" onchange="changeEinsatzArt()" class="bg-zinc-900 text-xl font-semibold rounded-xl px-3 py-1 focus:outline-none">
+              <option value="Realeinsatz">🚒 Realeinsatz</option>
+              <option value="Übung">🎓 Übung</option>
+              <option value="Belastungsübung">💪 Belastungsübung</option>
+              <option value="Heißausbildung">🔥 Heißausbildung</option>
+              <option value="Lehrgang">📚 Lehrgang</option>
+            </select>
+          </div>
+          <div class="h-8 w-px bg-zinc-700"></div>
+          <div>
+            <div class="text-xs text-zinc-400">Alarmzeit</div>
+            <div id="alarmzeit" class="font-mono text-xl font-semibold">10:45</div>
+          </div>
+        </div>
+        
+        <div id="einsatz-status-display" class="px-6 py-3 rounded-2xl font-semibold flex items-center gap-2 status-green">
+          <span id="status-icon">🟢</span>
+          <span>Einsatzstatus:</span>
+          <span id="status-text">Aktiv</span>
+        </div>
+
+        <button onclick="pauseOrResumeEinsatz()" id="pause-btn"
+                class="px-5 py-3 rounded-2xl font-semibold bg-yellow-500 hover:bg-yellow-600 text-black">
+          ⏸ Pausieren
+        </button>
+
+        <button onclick="handleEndEinsatz()" id="end-einsatz-btn"
+                class="px-5 py-3 rounded-2xl font-semibold bg-red-700 hover:bg-red-800 text-white">
+          ⏹ Einsatz beenden
+        </button>
+        
+        <button onclick="exportPDF()" 
+                class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 px-6 py-3 rounded-2xl font-semibold transition-colors">
+          <i class="fas fa-file-pdf"></i>
+          <span>PDF Protokoll</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Tabs -->
+    <div class="px-8 pt-4 border-b border-zinc-800 bg-zinc-900 sticky top-20 z-40">
+      <div class="flex gap-8 text-lg">
+        <button onclick="showTab(0)" class="tab-btn active pb-4 px-2">📊 Dashboard</button>
+        <button onclick="showTab(1)" class="tab-btn pb-4 px-2">👥 Trupps</button>
+        <button onclick="showTab(2)" class="tab-btn pb-4 px-2">🛡️ Atemschutz</button>
+        <button onclick="showTab(3)" class="tab-btn pb-4 px-2">🏢 Gebäude</button>
+      </div>
+    </div>
+
+    <!-- Tab Contents -->
+    <div class="p-8">
+      <!-- TAB 0: Dashboard -->
+      <div id="tab-0" class="tab-content">
+        <div id="dashboard-warning" class="mb-6 rounded-3xl px-8 py-5 text-xl font-bold flex items-center justify-between bg-emerald-600 text-black">
+          <span id="dashboard-warning-text">🟢 Alle Trupps melden regelmäßig</span>
+          <span id="dashboard-warning-count" class="text-sm font-semibold opacity-80">Status: OK</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Einsatzinfo -->
+          <div class="lg:col-span-5 bg-zinc-900 rounded-3xl p-8">
+            <h2 class="text-2xl font-semibold mb-6 flex items-center gap-3">
+              <i class="fas fa-fire"></i> Einsatzinformationen
+            </h2>
+            <div class="space-y-6">
+              <div id="einsatzart-hinweis" class="bg-zinc-800 rounded-2xl px-5 py-4 border-l-4 border-red-500">
+                <div class="text-zinc-400 text-sm">Aktuelle Einsatzart</div>
+                <div id="einsatzart-hinweis-text" class="text-xl font-bold">🚒 Realeinsatz</div>
+                <div id="einsatzart-hinweis-sub" class="text-sm text-zinc-400 mt-1">Einsatzprotokoll zur Dokumentation der Atemschutzüberwachung.</div>
+              </div>
+
+              <div>
+                <label class="block text-zinc-400 text-sm mb-1">Einsatzort</label>
+                <input id="einsatz-ort" value="Musterstraße 42, 12345 Musterstadt - Kellerbrand" 
+                       class="w-full bg-zinc-800 rounded-2xl px-5 py-4 text-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-zinc-400 text-sm mb-1">Alarmierte Einheiten</label>
+                  <input value="LF 16/12 + RW + NEF" class="w-full bg-zinc-800 rounded-2xl px-5 py-4 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-zinc-400 text-sm mb-1">Führung</label>
+                  <input value="Zugführer Meier" class="w-full bg-zinc-800 rounded-2xl px-5 py-4 focus:outline-none">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Schnellübersicht Trupps -->
+          <div class="lg:col-span-7 bg-zinc-900 rounded-3xl p-8">
+            <h2 class="text-2xl font-semibold mb-6">Aktive Trupps</h2>
+            <div id="dashboard-trupps" class="grid grid-cols-2 gap-4"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 1: Truppverwaltung -->
+      <div id="tab-1" class="tab-content hidden">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-3xl font-bold">Truppverwaltung</h2>
+          <button onclick="addTrupp()" 
+                  class="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-2xl font-semibold flex items-center gap-2">
+            <i class="fas fa-plus"></i> Neuen Trupp hinzufügen
+          </button>
+        </div>
+        
+        <div id="trupp-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+      </div>
+
+      <!-- TAB 2: Atemschutz -->
+      <div id="tab-2" class="tab-content hidden">
+        <h2 class="text-3xl font-bold mb-8">Atemschutzüberwachung</h2>
+        <div id="atemschutz-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        
+        <div class="mt-12 bg-zinc-900 rounded-3xl p-8">
+          <h3 class="text-xl font-semibold mb-4">Druckmeldung schnell eintragen</h3>
+          <div class="flex gap-4">
+            <select id="quick-trupp-select" class="bg-zinc-800 rounded-2xl px-5 py-4 flex-1"></select>
+            <input id="quick-druck" type="number" placeholder="Restdruck in bar" 
+                   class="bg-zinc-800 rounded-2xl px-5 py-4 w-48 focus:outline-none">
+            <button onclick="quickPressureEntry()" 
+                    class="bg-emerald-600 hover:bg-emerald-700 px-8 rounded-2xl font-semibold">Eintragen</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: Gebäude -->
+      <div id="tab-3" class="tab-content hidden">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+          <h2 class="text-3xl font-bold">Gebäudeansicht - Truppzuordnung</h2>
+
+          <div class="flex gap-3">
+            <button onclick="openFloorModal()"
+                    class="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-2xl font-semibold flex items-center gap-2">
+              <i class="fas fa-plus"></i> Bereich / Stockwerk hinzufügen
+            </button>
+          </div>
+        </div>
+
+        <div id="building-floors" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal für Trupp-Details / Druckeingabe -->
+  <div id="modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+    <div class="bg-zinc-900 rounded-3xl p-8 max-w-md w-full mx-4">
+      <h3 id="modal-title" class="text-2xl font-bold mb-6">Truppführer Druck melden</h3>
+      <div class="space-y-6">
+        <div>
+          <label class="block text-zinc-400 mb-2">Restdruck (bar)</label>
+          <input id="modal-druck" type="number" value="180" 
+                 class="w-full bg-zinc-800 text-4xl font-mono text-center py-6 rounded-2xl focus:outline-none">
+        </div>
+        <button onclick="savePressure()" 
+                class="w-full bg-red-600 hover:bg-red-700 py-4 rounded-2xl text-xl font-semibold">Druck speichern</button>
+      </div>
+      <button onclick="closeModal()" class="mt-4 text-zinc-400 hover:text-white">Abbrechen</button>
+    </div>
+  </div>
+
+
+  <!-- Modal für Bereich/Stockwerk hinzufügen -->
+  <div id="floor-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+    <div class="bg-zinc-900 rounded-3xl p-8 max-w-2xl w-full mx-4">
+      <h3 class="text-2xl font-bold mb-2">Bereich / Stockwerk hinzufügen</h3>
+      <p class="text-zinc-400 mb-6">Wähle ein Stockwerk und die Richtung. AtemGuard sortiert die Bereiche automatisch.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div>
+          <label class="block text-zinc-400 mb-2">Stockwerk</label>
+          <select id="floor-level-select" class="w-full bg-zinc-800 rounded-2xl px-5 py-4 focus:outline-none">
+            <option value="-2">Tiefgarage / UG</option>
+            <option value="-1">Keller</option>
+            <option value="0">Erdgeschoss</option>
+            <option value="1">1. OG</option>
+            <option value="2">2. OG</option>
+            <option value="3">3. OG</option>
+            <option value="4">4. OG</option>
+            <option value="5">5. OG</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-zinc-400 mb-2">Richtung / Bereich</label>
+          <select id="floor-side-select" class="w-full bg-zinc-800 rounded-2xl px-5 py-4 focus:outline-none">
+            <option value="Links">Links</option>
+            <option value="Voraus">Voraus</option>
+            <option value="Rechts">Rechts</option>
+            <option value="Mitte">Mitte</option>
+            <option value="Hinten">Hinten</option>
+            <option value="Flur">Flur</option>
+            <option value="Treppenraum">Treppenraum</option>
+            <option value="Wohnung">Wohnung</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <label class="block text-zinc-400 mb-2">Optional: Eigener Name</label>
+        <input id="custom-floor-name" placeholder="z.B. 1. OG Wohnung links, Werkstatt, Heizungsraum"
+               class="w-full bg-zinc-800 rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-red-500">
+        <p class="text-xs text-zinc-500 mt-2">Leer lassen = automatisch, z.B. „1. OG Links“.</p>
+      </div>
+
+      <div class="bg-zinc-800 rounded-2xl p-4 mb-6">
+        <div class="text-sm text-zinc-400">Vorschau</div>
+        <div id="floor-preview" class="text-xl font-semibold text-emerald-400">1. OG Links</div>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="addFloorFromModal()" class="flex-1 bg-red-600 hover:bg-red-700 py-4 rounded-2xl font-semibold">
+          Hinzufügen
+        </button>
+        <button onclick="closeFloorModal()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 py-4 rounded-2xl font-semibold">
+          Abbrechen
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== GLOBALE VARIABLEN ====================
+    let trupps = [];
+    let currentStatus = 'active'; // active, paused, ended
+    let currentModalTruppId = null;
+    let einsatzLog = [];
+    let alarmMutedUntilNextCriticalChange = false;
+    let alarmAudioCtx = null;
+    let alarmInterval = null;
+    let renderTimer = null;
+    let floors = [
+      { id: 'keller', name: 'Keller', level: -1, sideOrder: 0 },
+      { id: 'eg', name: 'Erdgeschoss', level: 0, sideOrder: 0 },
+      { id: 'og1', name: '1. OG', level: 1, sideOrder: 0 },
+      { id: 'og2', name: '2. OG', level: 2, sideOrder: 0 },
+      { id: 'dg', name: 'Dachgeschoss', level: 99, sideOrder: 0 }
+    ];
+
+    const floorSides = [
+      { label: 'Links', order: 1 },
+      { label: 'Voraus', order: 2 },
+      { label: 'Rechts', order: 3 }
+    ];
+
+    // ==================== HILFSFUNKTIONEN ====================
+    function generateId() {
+      return 'trupp-' + Date.now();
+    }
+
+    function formatTime() {
+      const now = new Date();
+      return now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatDateTime() {
+      const now = new Date();
+      return now.toLocaleString('de-DE', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    }
+
+    function addLogEntry(trupp, type, text) {
+      if (!trupp.log) trupp.log = [];
+      trupp.log.push({
+        time: formatDateTime(),
+        timestamp: Date.now(),
+        type: type,
+        text: text
+      });
+    }
+
+    function logTruppChange(trupp, field, oldValue, newValue) {
+      if (!trupp) return;
+      addLogEntry(trupp, 'Trupp geändert', `${field}: ${oldValue} -> ${newValue}`);
+    }
+
+    function addEinsatzLogEntry(type, text) {
+      einsatzLog.push({
+        time: formatDateTime(),
+        timestamp: Date.now(),
+        type: type,
+        text: text
+      });
+    }
+
+    function updateAlarmzeit() {
+      document.getElementById('alarmzeit').textContent = formatTime();
+    }
+
+function getFloorName(floorId) {
+      const floor = floors.find(f => f.id === floorId);
+      return floor ? floor.name : 'Erdgeschoss';
+    }
+
+function getMissionMinutes(trupp) {
+      const start = trupp.createdAt || trupp.innenangriffStart || trupp.lastUpdate || Date.now();
+      return Math.floor((Date.now() - start) / 60000);
+    }
+
+    function getElapsedMinutesSince(timestamp) {
+      return Math.floor((Date.now() - timestamp) / 60000);
+    }
+
+    function formatDuration(ms) {
+      if (!ms || ms < 0) ms = 0;
+      const totalSeconds = Math.floor(ms / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      if (hours > 0) {
+        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      }
+
+      return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    function getInnenangriffDuration(trupp) {
+      if (!trupp.innenangriffActive || !trupp.innenangriffStart) return '00:00';
+      return formatDuration(Date.now() - trupp.innenangriffStart);
+    }
+
+    function getLastMessageDuration(trupp) {
+      return formatDuration(Date.now() - trupp.lastUpdate);
+    }
+
+    function getCriticalReason(trupp) {
+      const minutesSinceUpdate = (Date.now() - trupp.lastUpdate) / 60000;
+
+      if (trupp.maydayActive) return 'MAYDAY ausgelöst';
+      if (trupp.druck < 50) return 'Druck unter 50 bar';
+      if (minutesSinceUpdate >= 10) return 'Keine Rückmeldung seit 10 Min';
+
+      return null;
+    }
+
+
+    function updateAutomaticTruppStatusLogs() {
+      if (currentStatus === 'ended') return;
+
+      trupps.forEach(trupp => {
+        const minutesSinceUpdate = (Date.now() - trupp.lastUpdate) / 60000;
+        let newStatus = 'ok';
+        let statusText = 'Meldung regelmäßig';
+
+        if (trupp.maydayActive) {
+          newStatus = 'mayday-manual';
+          statusText = 'MAYDAY manuell ausgelöst';
+        } else if (trupp.druck < 50) {
+          newStatus = 'critical-pressure';
+          statusText = 'Kritisch: Druck unter 50 bar';
+        } else if (minutesSinceUpdate >= 10) {
+          newStatus = 'mayday-time';
+          statusText = 'Kritisch: Keine Rückmeldung seit 10 Min';
+        } else if (minutesSinceUpdate >= 7) {
+          newStatus = 'overdue';
+          statusText = 'Überfällig seit 7 Min';
+        } else if (minutesSinceUpdate >= 5) {
+          newStatus = 'due';
+          statusText = 'Druckmeldung fällig seit 5 Min';
+        }
+
+        if (trupp.autoStatus !== newStatus) {
+          addLogEntry(trupp, 'Automatischer Status', statusText);
+          trupp.autoStatus = newStatus;
+        }
+      });
+    }
+
+    function hasActiveCriticalAlarm() {
+      return trupps.some(trupp => {
+        const reason = getCriticalReason(trupp);
+        return reason && !trupp.alarmAcknowledged;
+      });
+    }
+
+    function playAlarmBeep() {
+      try {
+        if (!alarmAudioCtx) {
+          alarmAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        const oscillator = alarmAudioCtx.createOscillator();
+        const gain = alarmAudioCtx.createGain();
+
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(880, alarmAudioCtx.currentTime);
+        gain.gain.setValueAtTime(0.18, alarmAudioCtx.currentTime);
+
+        oscillator.connect(gain);
+        gain.connect(alarmAudioCtx.destination);
+
+        oscillator.start();
+        oscillator.stop(alarmAudioCtx.currentTime + 0.22);
+      } catch (e) {
+        console.warn('Alarmton konnte nicht abgespielt werden:', e);
+      }
+    }
+
+    function startAlarmSound() {
+      if (alarmInterval) return;
+      playAlarmBeep();
+      alarmInterval = setInterval(playAlarmBeep, 1500);
+    }
+
+    function stopAlarmSound() {
+      if (alarmInterval) {
+        clearInterval(alarmInterval);
+        alarmInterval = null;
+      }
+    }
+
+    function updateAlarmSound() {
+      if (currentStatus === 'ended') {
+        stopAlarmSound();
+        return;
+      }
+
+      if (hasActiveCriticalAlarm()) {
+        startAlarmSound();
+      } else {
+        stopAlarmSound();
+      }
+    }
+
+
+    function triggerMayday(truppId) {
+      const trupp = trupps.find(t => t.id === truppId);
+      if (!trupp) return;
+
+      if (!confirm(`MAYDAY für ${trupp.name} wirklich auslösen?`)) {
+        return;
+      }
+
+      trupp.maydayActive = true;
+      trupp.maydayAcknowledged = false;
+      trupp.alarmAcknowledged = false;
+      trupp.alarmReason = 'MAYDAY ausgelöst';
+
+      addLogEntry(trupp, 'MAYDAY', `MAYDAY ausgelöst | Standort: ${getFloorName(trupp.floor || 'eg')} | Druck: ${trupp.druck} bar`);
+      addEinsatzLogEntry('MAYDAY', `${trupp.name} | Standort: ${getFloorName(trupp.floor || 'eg')} | Druck: ${trupp.druck} bar`);
+      renderAll();
+    }
+
+    function acknowledgeMayday(truppId) {
+      const trupp = trupps.find(t => t.id === truppId);
+      if (!trupp) return;
+
+      trupp.maydayAcknowledged = true;
+      trupp.alarmAcknowledged = true;
+
+      addLogEntry(trupp, 'MAYDAY quittiert', `MAYDAY quittiert | Standort: ${getFloorName(trupp.floor || 'eg')}`);
+      addEinsatzLogEntry('MAYDAY quittiert', `${trupp.name} | Standort: ${getFloorName(trupp.floor || 'eg')}`);
+      renderAll();
+    }
+
+    function clearMayday(truppId) {
+      const trupp = trupps.find(t => t.id === truppId);
+      if (!trupp) return;
+
+      if (!confirm(`MAYDAY für ${trupp.name} zurücksetzen?`)) {
+        return;
+      }
+
+      trupp.maydayActive = false;
+      trupp.maydayAcknowledged = false;
+      trupp.alarmAcknowledged = false;
+      trupp.alarmReason = null;
+
+      addLogEntry(trupp, 'MAYDAY zurückgesetzt', `MAYDAY zurückgesetzt | Standort: ${getFloorName(trupp.floor || 'eg')}`);
+      addEinsatzLogEntry('MAYDAY zurückgesetzt', `${trupp.name} | Standort: ${getFloorName(trupp.floor || 'eg')}`);
+      renderAll();
+    }
+
+    function startInnenangriff(truppId) {
+      const trupp = trupps.find(t => t.id === truppId);
+      if (!trupp) return;
+
+      const oldStatus = trupp.innenangriffActive ? 'aktiv' : 'nicht aktiv';
+
+      trupp.innenangriffStart = Date.now();
+      trupp.innenangriffActive = true;
+      trupp.eintritt = formatTime();
+      // Wichtig: lastUpdate bleibt unverändert, damit die 5-Minuten-Druckabfrage nicht zurückgesetzt wird.
+      trupp.alarmAcknowledged = false;
+      trupp.alarmReason = null;
+
+      addLogEntry(trupp, 'Innenangriff gestartet', `Eintritt um ${trupp.eintritt}`);
+      logTruppChange(trupp, 'Innenangriff', oldStatus, 'aktiv');
+      renderAll();
+    }
+
+    function stopInnenangriff(truppId) {
+      const trupp = trupps.find(t => t.id === truppId);
+      if (!trupp) return;
+
+      const duration = getInnenangriffDuration(trupp);
+      const oldStatus = trupp.innenangriffActive ? 'aktiv' : 'nicht aktiv';
+
+      trupp.innenangriffActive = false;
+      trupp.innenangriffStart = null;
+      trupp.alarmAcknowledged = false;
+      trupp.alarmReason = null;
+
+      addLogEntry(trupp, 'Innenangriff beendet', `Dauer: ${duration}`);
+      logTruppChange(trupp, 'Innenangriff', oldStatus, 'beendet');
+      renderAll();
+    }
+
+    function acknowledgeAlarm(truppId) {
+      const trupp = trupps.find(t => t.id === truppId);
+      if (!trupp) return;
+
+      const reason = getCriticalReason(trupp) || trupp.alarmReason || 'Alarm quittiert';
+
+      trupp.alarmAcknowledged = true;
+      trupp.alarmReason = reason;
+
+      addLogEntry(trupp, 'Alarm quittiert', reason);
+      renderAll();
+    }
+
+    // ==================== TRUPP MANAGEMENT ====================
+    let currentScanTruppId = null;
+
+    // Demo-AGTs für QR-Scan Simulation
+    const demoAGTs = [
+      { name: "Max Mustermann", einheit: "LE 12" },
+      { name: "Susanne Mustermann", einheit: "LE 12" },
+      { name: "Thomas Berger", einheit: "LE 13" },
+      { name: "Lisa Hoffmann", einheit: "LE 12" },
+      { name: "Michael Weber", einheit: "LE 14" },
+      { name: "Anna Schmidt", einheit: "LE 13" }
+    ];
+
+    function createTrupp(name = "Trupp " + (trupps.length + 1)) {
+      return {
+        id: generateId(),
+        name: name,
+        fuehrer: "TF " + (trupps.length + 1),
+        mann: "TM",
+        fahrzeug: "LF 16",
+        funk: "Florian 42-" + (10 + trupps.length),
+        createdAt: Date.now(),
+        eintritt: formatTime(),
+        druck: 280,
+        lastUpdate: Date.now(),
+        floor: null,
+        color: 'green',
+        members: [],   // QR-gescannte AGT-Mitglieder
+        log: [],       // Zeitstempel für Druckmeldungen und Statusänderungen
+        innenangriffStart: null,
+        innenangriffActive: false,
+        alarmAcknowledged: false,
+        alarmReason: null,
+        autoStatus: 'ok',
+        maydayActive: false,
+        maydayAcknowledged: false
+      };
+    }
+
+    function addTrupp() {
+      const trupp = createTrupp();
+      addLogEntry(trupp, 'Trupp erstellt', `${trupp.name} wurde hinzugefügt`);
+      trupps.push(trupp);
+      renderAll();
+    }
+
+    function removeTrupp(id) {
+      const trupp = trupps.find(t => t.id === id);
+      if (trupp) {
+        addLogEntry(trupp, 'Trupp entfernt', `${trupp.name} wurde aus der aktiven Überwachung entfernt`);
+        addEinsatzLogEntry('Trupp entfernt', `${trupp.name} wurde entfernt`);
+      }
+      trupps = trupps.filter(t => t.id !== id);
+      renderAll();
+    }
+
+    // ==================== QR-Scan Simulation ====================
+    function scanAGT(truppId) {
+      currentScanTruppId = truppId;
+      const trupp = trupps.find(t => t.id === truppId);
+      if (!trupp) return;
+
+      let qrModal = document.getElementById('qr-modal');
+      if (!qrModal) {
+        qrModal = document.createElement('div');
+        qrModal.id = 'qr-modal';
+        qrModal.className = 'hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50';
+        qrModal.innerHTML = `
+          <div class="bg-zinc-900 rounded-3xl p-8 max-w-2xl w-full mx-4">
+            <h3 class="text-2xl font-bold mb-2">AGT scannen</h3>
+            <p class="text-zinc-400 mb-6">Scanne einen QR-Code oder nutze die Demo-Auswahl.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+              <button onclick="startRealQRScanner()" class="bg-red-600 hover:bg-red-700 px-5 py-4 rounded-2xl font-semibold">
+                📷 Kamera-Scan starten
+              </button>
+              <button onclick="showDemoAGTList()" class="bg-zinc-800 hover:bg-zinc-700 px-5 py-4 rounded-2xl font-semibold">
+                Demo-AGT auswählen
+              </button>
+            </div>
+
+            <div id="qr-reader" class="hidden bg-black rounded-2xl overflow-hidden mb-4"></div>
+            <div id="qr-scan-status" class="text-sm text-zinc-400 mb-4"></div>
+            <div id="qr-agt-list" class="space-y-2 mb-6 hidden"></div>
+
+            <div class="bg-zinc-800 rounded-2xl p-4 mb-6">
+              <div class="text-sm text-zinc-400 mb-1">QR-Code Testformat</div>
+              <div class="font-mono text-xs text-zinc-300 break-all">
+                {"name":"Max Mustermann","einheit":"LE 12","agtNr":"4711","funktion":"Truppführer"}
+              </div>
+            </div>
+
+            <button onclick="closeQRModal()" class="w-full py-3 text-zinc-400 hover:text-white">Abbrechen</button>
+          </div>
+        `;
+        document.body.appendChild(qrModal);
+      }
+
+      document.getElementById('qr-agt-list').classList.add('hidden');
+      document.getElementById('qr-reader').classList.add('hidden');
+      document.getElementById('qr-scan-status').textContent = '';
+      qrModal.classList.remove('hidden');
+    }
+
+    let qrScannerInstance = null;
+
+    function showDemoAGTList() {
+      const listContainer = document.getElementById('qr-agt-list');
+      const reader = document.getElementById('qr-reader');
+      if (reader) reader.classList.add('hidden');
+      if (!listContainer) return;
+
+      listContainer.innerHTML = '';
+      listContainer.classList.remove('hidden');
+
+      demoAGTs.forEach((agt, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'w-full text-left bg-zinc-800 hover:bg-zinc-700 px-5 py-4 rounded-2xl flex justify-between items-center';
+        btn.innerHTML = `
+          <div>
+            <div class="font-semibold">${agt.name}</div>
+            <div class="text-sm text-zinc-400">${agt.einheit}</div>
+          </div>
+          <div class="text-emerald-400">📱 Demo</div>
+        `;
+        btn.onclick = () => selectAGT(index);
+        listContainer.appendChild(btn);
+      });
+    }
+
+    function parseAGTQRCode(rawText) {
+      try {
+        const data = JSON.parse(rawText);
+        return {
+          name: data.name || data.Name || 'Unbekannter AGT',
+          einheit: data.einheit || data.Einheit || 'Unbekannte Einheit',
+          agtNr: data.agtNr || data.agt_nr || data.nr || '',
+          funktion: data.funktion || data.Funktion || ''
+        };
+      } catch (e) {
+        const parts = rawText.split(';').map(p => p.trim());
+        return {
+          name: parts[0] || rawText,
+          einheit: parts[1] || 'Unbekannte Einheit',
+          agtNr: parts[2] || '',
+          funktion: parts[3] || ''
+        };
+      }
+    }
+
+    function addScannedAGTToTrupp(agt) {
+      const trupp = trupps.find(t => t.id === currentScanTruppId);
+      if (!trupp) return;
+
+      trupp.members.push({
+        name: agt.name,
+        einheit: agt.einheit,
+        agtNr: agt.agtNr || '',
+        funktion: agt.funktion || '',
+        scannedAt: formatTime()
+      });
+
+      addLogEntry(trupp, 'AGT Scan', `${agt.name} (${agt.einheit})${agt.agtNr ? ' | AGT-Nr: ' + agt.agtNr : ''}${agt.funktion ? ' | ' + agt.funktion : ''} wurde per QR gescannt`);
+      if (typeof logTruppChange === 'function') {
+        logTruppChange(trupp, 'AGT hinzugefügt', '-', `${agt.name} (${agt.einheit})`);
+      }
+
+      closeQRModal();
+      renderAll();
+    }
+
+    async function startRealQRScanner() {
+      const status = document.getElementById('qr-scan-status');
+      const reader = document.getElementById('qr-reader');
+      const list = document.getElementById('qr-agt-list');
+
+      if (!window.Html5Qrcode) {
+        status.textContent = 'QR-Scanner konnte nicht geladen werden. Internetverbindung prüfen oder Demo nutzen.';
+        return;
+      }
+
+      if (list) list.classList.add('hidden');
+      if (reader) reader.classList.remove('hidden');
+      if (status) status.textContent = 'Kamera wird gestartet...';
+
+      try {
+        if (qrScannerInstance) {
+          await qrScannerInstance.stop().catch(() => {});
+          qrScannerInstance.clear();
+        }
+
+        qrScannerInstance = new Html5Qrcode("qr-reader");
+
+        await qrScannerInstance.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 260, height: 260 } },
+          async (decodedText) => {
+            if (status) status.textContent = 'QR-Code erkannt.';
+            const agt = parseAGTQRCode(decodedText);
+
+            await qrScannerInstance.stop().catch(() => {});
+            qrScannerInstance.clear();
+            qrScannerInstance = null;
+
+            addScannedAGTToTrupp(agt);
+          },
+          () => {}
+        );
+
+        if (status) status.textContent = 'Kamera aktiv. QR-Code vor die Kamera halten.';
+      } catch (error) {
+        console.error(error);
+        if (status) status.textContent = 'Kamera konnte nicht gestartet werden. Bitte HTTPS/localhost und Kameraberechtigung prüfen.';
+      }
+    }
+
+    function selectAGT(index) {
+      const agt = demoAGTs[index];
+      const trupp = trupps.find(t => t.id === currentScanTruppId);
+      if (!trupp) return;
+
+      trupp.members.push({
+        name: agt.name,
+        einheit: agt.einheit,
+        scannedAt: formatTime()
+      });
+
+      addLogEntry(trupp, 'AGT Scan', `${agt.name} (${agt.einheit}) wurde gescannt`);
+      logTruppChange(trupp, 'AGT hinzugefügt', '-', `${agt.name} (${agt.einheit})`);
+
+      closeQRModal();
+      renderAll();
+    }
+
+    async function closeQRModal() {
+      if (qrScannerInstance) {
+        await qrScannerInstance.stop().catch(() => {});
+        qrScannerInstance.clear();
+        qrScannerInstance = null;
+      }
+
+      const qrModal = document.getElementById('qr-modal');
+      if (qrModal) qrModal.classList.add('hidden');
+    }
+
+    function openPressureModal(truppId) {
+      currentModalTruppId = truppId;
+      const trupp = trupps.find(t => t.id === truppId);
+      if (trupp) {
+        document.getElementById('modal-druck').value = trupp.druck;
+        document.getElementById('modal-title').textContent = `${trupp.name} - Druckmeldung`;
+        document.getElementById('modal').classList.remove('hidden');
+      }
+    }
+
+    function savePressure() {
+      if (!currentModalTruppId) return;
+      const druck = parseInt(document.getElementById('modal-druck').value) || 150;
+      const trupp = trupps.find(t => t.id === currentModalTruppId);
+      if (trupp) {
+        const oldDruck = trupp.druck;
+        trupp.druck = druck;
+        trupp.lastUpdate = Date.now();
+        trupp.autoStatus = 'ok';
+        checkPressureStatus(trupp);
+        addLogEntry(trupp, 'Druckmeldung', `${oldDruck} bar -> ${druck} bar`);
+        logTruppChange(trupp, 'Druck', `${oldDruck} bar`, `${druck} bar`);
+      }
+      closeModal();
+      renderAll();
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.add('hidden');
+    }
+
+    function checkPressureStatus(trupp) {
+      const minutesSinceUpdate = (Date.now() - trupp.lastUpdate) / 60000;
+      if (trupp.druck < 80) trupp.color = 'red';
+      else if (trupp.druck < 120) trupp.color = 'yellow';
+      else trupp.color = 'green';
+
+      const criticalReason = getCriticalReason(trupp);
+      if (!criticalReason) {
+        trupp.alarmAcknowledged = false;
+        trupp.alarmReason = null;
+      } else if (trupp.alarmReason !== criticalReason) {
+        trupp.alarmAcknowledged = false;
+        trupp.alarmReason = criticalReason;
+        addLogEntry(trupp, 'Alarm ausgelöst', criticalReason);
+      }
+    }
+
+    // ==================== RENDERING ====================
+    function renderTruppList() {
+      const container = document.getElementById('trupp-list');
+      container.innerHTML = '';
+      
+      trupps.forEach(trupp => {
+        const minutes = Math.floor((Date.now() - trupp.lastUpdate) / 60000);
+        
+        const card = document.createElement('div');
+        card.className = `trupp-card bg-zinc-900 border border-zinc-700 rounded-3xl p-6`;
+        card.innerHTML = `
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <div class="font-bold text-xl">${trupp.name}</div>
+              <div class="text-sm text-zinc-400">${trupp.funk} • ${trupp.fahrzeug}</div>
+            </div>
+            <button onclick="removeTrupp('${trupp.id}')" class="text-red-400 hover:text-red-500">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <div class="text-zinc-400">Führer</div>
+              <div class="font-medium">${trupp.fuehrer}</div>
+            </div>
+            <div>
+              <div class="text-zinc-400">Eintritt</div>
+              <div class="font-mono">${trupp.eintritt}</div>
+            </div>
+            <div>
+              <div class="text-zinc-400">Standort</div>
+              <div class="font-medium text-emerald-400">${getFloorName(trupp.floor || 'eg')}</div>
+            </div>
+            <div>
+              <div class="text-zinc-400">Einsatzzeit</div>
+              <div class="font-mono">${getMissionMinutes(trupp)} min</div>
+            </div>
+          </div>
+          
+          <div class="mt-6 pt-6 border-t border-zinc-700">
+            <div class="mb-4 bg-zinc-800 rounded-2xl p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="text-xs text-zinc-400">Innenangriff</div>
+                  <div class="font-mono text-xl font-bold">${trupp.innenangriffActive ? getInnenangriffDuration(trupp) : 'nicht aktiv'}</div>
+                </div>
+                ${trupp.innenangriffActive ? `
+                  <button onclick="stopInnenangriff('${trupp.id}')" class="bg-zinc-700 hover:bg-zinc-600 px-4 py-2 rounded-xl font-semibold">⏹ Beenden</button>
+                ` : `
+                  <button onclick="startInnenangriff('${trupp.id}')" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl font-semibold">▶ Start</button>
+                `}
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between mb-3">
+              <div onclick="openPressureModal('${trupp.id}')" 
+                   class="cursor-pointer bg-zinc-800 hover:bg-zinc-700 px-6 py-3 rounded-2xl font-mono text-2xl font-semibold">
+                ${trupp.druck} bar
+              </div>
+              
+              <div class="text-right">
+                <div class="text-xs text-zinc-400">letzte Meldung</div>
+                <div class="text-sm">${minutes} min</div>
+              </div>
+            </div>
+
+            <!-- QR-Scan Button -->
+            <button onclick="triggerMayday('${trupp.id}')" 
+                    class="w-full mb-3 py-3 bg-red-700 hover:bg-red-800 rounded-2xl font-bold flex items-center justify-center gap-2">
+              🚨 MAYDAY
+            </button>
+
+            <button onclick="scanAGT('${trupp.id}')" 
+                    class="w-full mb-3 py-3 bg-emerald-600 hover:bg-emerald-700 rounded-2xl font-semibold flex items-center justify-center gap-2">
+              <i class="fas fa-qrcode"></i> AGT scannen (Demo)
+            </button>
+
+            <!-- Gescannte Mitglieder -->
+            ${trupp.members && trupp.members.length > 0 ? `
+              <div class="text-xs text-zinc-400 mb-1">Gescannt:</div>
+              <div class="space-y-1">
+                ${trupp.members.map(m => `
+                  <div class="bg-zinc-800 px-3 py-1.5 rounded-xl text-sm flex justify-between">
+                    <span>${m.name} (${m.einheit})</span>
+                    <span class="text-zinc-500 text-xs">${m.scannedAt}</span>
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderAtemschutz() {
+      const container = document.getElementById('atemschutz-container');
+      container.innerHTML = '';
+      
+      trupps.forEach(trupp => {
+        const minutesSinceUpdate = (Date.now() - trupp.lastUpdate) / 60000;
+
+        const pressureWarning = trupp.druck < 100 ? 'blink bg-red-900/50' : '';
+        const updateWarning = minutesSinceUpdate >= 7 ? 'border-warning' : '';
+
+        let statusText = '';
+        let statusClass = '';
+
+        const criticalReason = getCriticalReason(trupp);
+        const alarmIsActive = criticalReason && !trupp.alarmAcknowledged;
+
+        if (criticalReason === 'MAYDAY ausgelöst') {
+          statusText = '🚨 MAYDAY AUSGELÖST';
+          statusClass = 'text-red-500 font-bold blink';
+        } else if (criticalReason === 'Druck unter 50 bar') {
+          statusText = '🚨 Druck unter 50 bar';
+          statusClass = 'text-red-500 font-bold blink';
+        } else if (minutesSinceUpdate >= 10) {
+          statusText = '🚨 Keine Rückmeldung seit 10 Min';
+          statusClass = 'text-red-500 font-bold blink';
+        } else if (minutesSinceUpdate >= 7) {
+          statusText = '🔴 Überfällig (7 Min)';
+          statusClass = 'text-red-400 font-semibold';
+        } else if (minutesSinceUpdate >= 5) {
+          statusText = '🟡 Druckmeldung fällig (5 Min)';
+          statusClass = 'text-yellow-400 font-semibold';
+        } else {
+          statusText = `🟢 Letzte Meldung vor ${Math.floor(minutesSinceUpdate)} Min`;
+          statusClass = 'text-emerald-400';
+        }
+        
+        const card = document.createElement('div');
+        card.className = `
+          bg-zinc-900 rounded-3xl p-7 border
+          ${trupp.color === 'red' ? 'border-red-500' : 'border-zinc-700'}
+          ${pressureWarning}
+          ${updateWarning}
+          ${alarmIsActive ? 'alarm-active' : ''}
+        `;
+        card.innerHTML = `
+          <div class="flex justify-between">
+            <div class="font-bold text-xl">${trupp.name}</div>
+            <div class="px-4 py-1 rounded-full text-xs font-semibold ${trupp.color === 'red' ? 'status-red' : trupp.color === 'yellow' ? 'status-yellow' : 'status-green'}">
+              ${trupp.color === 'red' ? '🔴 KRITISCH' : trupp.color === 'yellow' ? '🟡 NIEDRIG' : '🟢 OK'}
+            </div>
+          </div>
+          
+          <div class="mt-8 text-center">
+            <div class="text-6xl font-mono font-bold tracking-tighter">${trupp.druck}</div>
+            <div class="text-zinc-400 -mt-1">bar Restdruck</div>
+            <div class="mt-4 text-center">
+              <div class="${statusClass}">${statusText}</div>
+            </div>
+          </div>
+          
+          <button onclick="openPressureModal('${trupp.id}')" 
+                  class="mt-8 w-full py-4 bg-zinc-800 hover:bg-zinc-700 rounded-2xl font-semibold">Neue Druckmeldung</button>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderDashboardTrupps() {
+      const container = document.getElementById('dashboard-trupps');
+      container.innerHTML = '';
+      
+      trupps.slice(0, 4).forEach(trupp => {
+        const div = document.createElement('div');
+        div.className = 'bg-zinc-800 rounded-3xl p-5';
+        div.innerHTML = `
+          <div class="font-semibold">${trupp.name}</div>
+          <div class="text-4xl font-mono mt-3 mb-1">${trupp.druck} <span class="text-base align-super">bar</span></div>
+          <div class="text-xs text-zinc-400">${trupp.funk}</div>
+          <div class="mt-3 grid grid-cols-2 gap-2 text-xs">
+            <div class="bg-zinc-900 rounded-xl px-3 py-2">
+              <div class="text-zinc-500">Standort</div>
+              <div class="text-emerald-400 font-semibold">${getFloorName(trupp.floor || 'eg')}</div>
+            </div>
+            <div class="bg-zinc-900 rounded-xl px-3 py-2">
+              <div class="text-zinc-500">Innenangriff</div>
+              <div class="font-mono">${trupp.innenangriffActive ? getInnenangriffDuration(trupp) : 'nicht aktiv'}</div>
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function getLevelLabel(level) {
+      level = parseInt(level);
+
+      if (level === -2) return 'Tiefgarage / UG';
+      if (level === -1) return 'Keller';
+      if (level === 0) return 'Erdgeschoss';
+      if (level === 99) return 'Dachgeschoss';
+      return `${level}. OG`;
+    }
+
+    function getSideOrder(side) {
+      const normalized = (side || '').toLowerCase();
+
+      if (normalized.includes('links')) return 1;
+      if (normalized.includes('voraus')) return 2;
+      if (normalized.includes('mitte')) return 2;
+      if (normalized.includes('rechts')) return 3;
+      if (normalized.includes('flur')) return 4;
+      if (normalized.includes('treppen')) return 5;
+      if (normalized.includes('hinten')) return 6;
+      if (normalized.includes('wohnung')) return 7;
+      return 50;
+    }
+
+    function sortFloors() {
+      floors.sort((a, b) => {
+        const levelDiff = (a.level ?? 50) - (b.level ?? 50);
+        if (levelDiff !== 0) return levelDiff;
+
+        const sideDiff = (a.sideOrder ?? 0) - (b.sideOrder ?? 0);
+        if (sideDiff !== 0) return sideDiff;
+
+        return a.name.localeCompare(b.name, 'de');
+      });
+    }
+
+    function buildFloorName(level, side) {
+      const levelLabel = getLevelLabel(level);
+
+      if (!side || side === 'Standard') return levelLabel;
+      return `${levelLabel} ${side}`;
+    }
+
+    function updateFloorPreview() {
+      const level = document.getElementById('floor-level-select')?.value ?? 1;
+      const side = document.getElementById('floor-side-select')?.value ?? 'Links';
+      const custom = document.getElementById('custom-floor-name')?.value.trim();
+
+      const preview = document.getElementById('floor-preview');
+      if (preview) preview.textContent = custom || buildFloorName(level, side);
+    }
+
+    function openFloorModal() {
+      const modal = document.getElementById('floor-modal');
+      if (!modal) return;
+
+      modal.classList.remove('hidden');
+      updateFloorPreview();
+
+      const levelSelect = document.getElementById('floor-level-select');
+      const sideSelect = document.getElementById('floor-side-select');
+      const customInput = document.getElementById('custom-floor-name');
+
+      if (levelSelect) levelSelect.onchange = updateFloorPreview;
+      if (sideSelect) sideSelect.onchange = updateFloorPreview;
+      if (customInput) customInput.oninput = updateFloorPreview;
+    }
+
+    function closeFloorModal() {
+      const modal = document.getElementById('floor-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function addFloorFromModal() {
+      const level = parseInt(document.getElementById('floor-level-select').value);
+      const side = document.getElementById('floor-side-select').value;
+      const custom = document.getElementById('custom-floor-name').value.trim();
+
+      const name = custom || buildFloorName(level, side);
+
+      if (floors.some(f => f.name.toLowerCase() === name.toLowerCase())) {
+        alert(`Der Bereich "${name}" existiert bereits.`);
+        return;
+      }
+
+      const id = 'floorcustom-' + Date.now();
+
+      floors.push({
+        id: id,
+        name: name,
+        level: level,
+        sideOrder: getSideOrder(custom || side)
+      });
+
+      sortFloors();
+      addEinsatzLogEntry('Gebäude angepasst', `Bereich hinzugefügt: ${name}`);
+      document.getElementById('custom-floor-name').value = '';
+      closeFloorModal();
+      renderAll();
+    }
+
+    function renderGebäude() {
+      sortFloors();
+      const buildingContainer = document.getElementById('building-floors');
+      if (!buildingContainer) return;
+
+      buildingContainer.innerHTML = '';
+
+      floors.forEach(floor => {
+        const floorDiv = document.createElement('div');
+        floorDiv.onclick = dropOnFloor;
+        floorDiv.ondrop = drop;
+        floorDiv.ondragover = allowDrop;
+        floorDiv.id = `floor-${floor.id}`;
+        floorDiv.className = 'floor bg-zinc-900 border-2 border-dashed border-zinc-700 hover:border-green-500 rounded-3xl p-6 min-h-[180px]';
+
+        const canDelete = floor.id !== 'eg';
+
+        floorDiv.innerHTML = `
+          <div class="flex items-center justify-between gap-2 mb-4">
+            <div class="font-semibold text-lg">${floor.name}</div>
+            ${canDelete ? `
+              <button onclick="removeFloor(event, '${floor.id}')" class="text-zinc-500 hover:text-red-400" title="Stockwerk löschen">
+                <i class="fas fa-trash"></i>
+              </button>
+            ` : ''}
+          </div>
+          <div id="floor-${floor.id}-content" class="space-y-2"></div>
+        `;
+
+        buildingContainer.appendChild(floorDiv);
+      });
+
+      trupps.forEach(trupp => {
+        let floorId = trupp.floor || 'eg';
+
+        if (!floors.some(floor => floor.id === floorId)) {
+          floorId = 'eg';
+          trupp.floor = 'eg';
+        }
+
+        const content = document.getElementById(`floor-${floorId}-content`);
+        if (!content) return;
+
+        const el = document.createElement('div');
+        el.draggable = true;
+        el.ondragstart = (e) => e.dataTransfer.setData("text", trupp.id);
+        el.className = `trupp-card bg-zinc-800 rounded-2xl p-4 cursor-move border-l-4 ${trupp.maydayActive ? 'border-red-500 alarm-active' : trupp.color === 'red' ? 'border-red-500' : 'border-emerald-500'}`;
+        el.innerHTML = `
+          <div class="font-medium">${trupp.maydayActive ? '🚨 ' : ''}${trupp.name}</div>
+          <div class="text-xs text-zinc-400">${trupp.funk} • ${trupp.druck} bar</div>
+          <div class="mt-2 grid grid-cols-2 gap-2 text-xs">
+            <div class="bg-zinc-900 rounded-xl px-2 py-1">
+              <div class="text-zinc-500">Innen</div>
+              <div class="font-mono">${trupp.innenangriffActive ? getInnenangriffDuration(trupp) : '--:--'}</div>
+            </div>
+            <div class="bg-zinc-900 rounded-xl px-2 py-1">
+              <div class="text-zinc-500">Meldung</div>
+              <div class="font-mono">${getLastMessageDuration(trupp)}</div>
+            </div>
+          </div>
+        `;
+        content.appendChild(el);
+      });
+    }
+
+    function removeFloor(event, floorId) {
+      event.stopPropagation();
+
+      const floor = floors.find(f => f.id === floorId);
+      if (!floor) return;
+
+      if (!confirm(`Bereich/Stockwerk "${floor.name}" wirklich löschen? Zugeordnete Trupps werden ins Erdgeschoss verschoben.`)) {
+        return;
+      }
+
+      trupps.forEach(trupp => {
+        if (trupp.floor === floorId) {
+          trupp.floor = 'eg';
+          addLogEntry(trupp, 'Standort geändert', `${floor.name} gelöscht → Erdgeschoss`);
+        }
+      });
+
+      floors = floors.filter(f => f.id !== floorId);
+      addEinsatzLogEntry('Gebäude angepasst', `Bereich/Stockwerk gelöscht: ${floor.name}`);
+      renderAll();
+    }
+
+    function renderDashboardWarning() {
+      const warningBar = document.getElementById('dashboard-warning');
+      const warningText = document.getElementById('dashboard-warning-text');
+      const warningCount = document.getElementById('dashboard-warning-count');
+
+      if (!warningBar || !warningText || !warningCount) return;
+
+      let dueCount = 0;
+      let overdueCount = 0;
+      let maydayCount = 0;
+
+      trupps.forEach(trupp => {
+        const minutesSinceUpdate = (Date.now() - trupp.lastUpdate) / 60000;
+
+        if (trupp.maydayActive || trupp.druck < 50 || minutesSinceUpdate >= 10) {
+          maydayCount++;
+        } else if (minutesSinceUpdate >= 7) {
+          overdueCount++;
+        } else if (minutesSinceUpdate >= 5) {
+          dueCount++;
+        }
+      });
+
+      if (maydayCount > 0) {
+        warningBar.className = 'mb-6 rounded-3xl px-8 py-5 text-xl font-bold flex items-center justify-between bg-red-700 text-white blink';
+        warningText.textContent = `🚨 Kritischer Alarm / MAYDAY: ${maydayCount} Trupp(s) betroffen`;
+        warningCount.textContent = 'Status: KRITISCH';
+      } else if (overdueCount > 0) {
+        warningBar.className = 'mb-6 rounded-3xl px-8 py-5 text-xl font-bold flex items-center justify-between bg-red-600 text-white';
+        warningText.textContent = `🔴 ${overdueCount} Trupp(s) überfällig seit > 7 Min`;
+        warningCount.textContent = 'Status: ÜBERFÄLLIG';
+      } else if (dueCount > 0) {
+        warningBar.className = 'mb-6 rounded-3xl px-8 py-5 text-xl font-bold flex items-center justify-between bg-yellow-500 text-black';
+        warningText.textContent = `🟡 ${dueCount} Trupp(s): Druckmeldung fällig`;
+        warningCount.textContent = 'Status: PRÜFEN';
+      } else {
+        warningBar.className = 'mb-6 rounded-3xl px-8 py-5 text-xl font-bold flex items-center justify-between bg-emerald-600 text-black';
+        warningText.textContent = '🟢 Alle Trupps melden regelmäßig';
+        warningCount.textContent = 'Status: OK';
+      }
+    }
+
+    function renderAll() {
+      updateAutomaticTruppStatusLogs();
+      renderTruppList();
+      renderAtemschutz();
+      renderDashboardTrupps();
+      renderDashboardWarning();
+      renderGebäude();
+      updateQuickSelect();
+      updateAlarmSound();
+    }
+
+    // ==================== DRAG & DROP ====================
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+
+    function drop(ev) {
+      ev.preventDefault();
+      const truppId = ev.dataTransfer.getData("text");
+      const floorDiv = ev.currentTarget;
+      const floorId = floorDiv.id.replace('floor-', '');
+      
+      const trupp = trupps.find(t => t.id === truppId);
+      if (trupp) trupp.floor = floorId;
+      
+      renderAll();
+    }
+
+    function dropOnFloor(ev) {
+      // For click-based assignment if needed
+    }
+
+    // ==================== QUICK PRESSURE ====================
+    function updateQuickSelect() {
+      const select = document.getElementById('quick-trupp-select');
+      select.innerHTML = '';
+      trupps.forEach(trupp => {
+        const opt = document.createElement('option');
+        opt.value = trupp.id;
+        opt.textContent = `${trupp.name} (${trupp.druck} bar)`;
+        select.appendChild(opt);
+      });
+    }
+
+    function quickPressureEntry() {
+      const select = document.getElementById('quick-trupp-select');
+      const druckInput = document.getElementById('quick-druck');
+      
+      if (!select.value) return;
+      
+      const trupp = trupps.find(t => t.id === select.value);
+      if (trupp && druckInput.value) {
+        const oldDruck = trupp.druck;
+        const newDruck = parseInt(druckInput.value);
+        trupp.druck = newDruck;
+        trupp.lastUpdate = Date.now();
+        trupp.autoStatus = 'ok';
+        checkPressureStatus(trupp);
+        addLogEntry(trupp, 'Druckmeldung', `${oldDruck} bar -> ${newDruck} bar`);
+        logTruppChange(trupp, 'Druck', `${oldDruck} bar`, `${newDruck} bar`);
+        renderAll();
+        druckInput.value = '';
+      }
+    }
+
+
+    function getEinsatzArt() {
+      const select = document.getElementById('einsatz-art');
+      return select ? select.value : 'Realeinsatz';
+    }
+
+    function getEinsatzArtTitle() {
+      const art = getEinsatzArt();
+
+      if (art === 'Übung') return 'ÜBUNGSDOKUMENTATION - AtemGuard';
+      if (art === 'Belastungsübung') return 'NACHWEIS BELASTUNGSÜBUNG - AtemGuard';
+      if (art === 'Heißausbildung') return 'NACHWEIS HEISSAUSBILDUNG - AtemGuard';
+      if (art === 'Lehrgang') return 'LEHRGANGSDOKUMENTATION - AtemGuard';
+
+      return 'EINSATZPROTOKOLL - AtemGuard';
+    }
+
+    function getEinsatzArtDescription() {
+      const art = getEinsatzArt();
+
+      if (art === 'Übung') return 'Diese Dokumentation dient Ausbildungs- und Übungszwecken.';
+      if (art === 'Belastungsübung') return 'Nachweis einer Belastungsübung unter Atemschutz.';
+      if (art === 'Heißausbildung') return 'Nachweis einer Heißausbildung / Realbrandausbildung.';
+      if (art === 'Lehrgang') return 'Dokumentation im Rahmen eines Lehrgangs oder einer Ausbildung.';
+
+      return 'Einsatzprotokoll zur Dokumentation der Atemschutzüberwachung.';
+    }
+
+    function getEinsatzArtIcon() {
+      const art = getEinsatzArt();
+
+      if (art === 'Übung') return '🎓';
+      if (art === 'Belastungsübung') return '💪';
+      if (art === 'Heißausbildung') return '🔥';
+      if (art === 'Lehrgang') return '📚';
+
+      return '🚒';
+    }
+
+    function changeEinsatzArt() {
+      const art = getEinsatzArt();
+      const textEl = document.getElementById('einsatzart-hinweis-text');
+      const subEl = document.getElementById('einsatzart-hinweis-sub');
+
+      if (textEl) textEl.textContent = `${getEinsatzArtIcon()} ${art}`;
+      if (subEl) subEl.textContent = getEinsatzArtDescription();
+
+      addEinsatzLogEntry('Einsatzart geändert', `Einsatzart gesetzt auf: ${art}`);
+      renderAll();
+    }
+
+    // ==================== STATUS & PDF ====================
+    function updateEinsatzStatusDisplay() {
+      const display = document.getElementById('einsatz-status-display');
+      const icon = document.getElementById('status-icon');
+      const text = document.getElementById('status-text');
+      const pauseBtn = document.getElementById('pause-btn');
+      const endBtn = document.getElementById('end-einsatz-btn');
+
+      if (!display || !icon || !text || !pauseBtn) return;
+
+      if (currentStatus === 'active') {
+        display.className = 'px-6 py-3 rounded-2xl font-semibold flex items-center gap-2 status-green';
+        icon.textContent = '🟢';
+        text.textContent = 'Aktiv';
+        pauseBtn.textContent = '⏸ Pausieren';
+        pauseBtn.className = 'px-5 py-3 rounded-2xl font-semibold bg-yellow-500 hover:bg-yellow-600 text-black';
+        if (endBtn) endBtn.className = 'px-5 py-3 rounded-2xl font-semibold bg-red-700 hover:bg-red-800 text-white';
+      } else if (currentStatus === 'paused') {
+        display.className = 'px-6 py-3 rounded-2xl font-semibold flex items-center gap-2 status-yellow';
+        icon.textContent = '🟡';
+        text.textContent = 'Pausiert';
+        pauseBtn.textContent = '▶ Fortsetzen';
+        pauseBtn.className = 'px-5 py-3 rounded-2xl font-semibold bg-emerald-600 hover:bg-emerald-700 text-white';
+        if (endBtn) endBtn.className = 'px-5 py-3 rounded-2xl font-semibold bg-red-700 hover:bg-red-800 text-white';
+      } else if (currentStatus === 'ended') {
+        display.className = 'px-6 py-3 rounded-2xl font-semibold flex items-center gap-2 status-red';
+        icon.textContent = '🔴';
+        text.textContent = 'Beendet';
+        pauseBtn.textContent = 'Einsatz beendet';
+        pauseBtn.className = 'px-5 py-3 rounded-2xl font-semibold bg-zinc-700 text-zinc-400 cursor-not-allowed';
+        if (endBtn) endBtn.className = 'px-5 py-3 rounded-2xl font-semibold bg-zinc-700 text-zinc-400 cursor-not-allowed';
+      }
+    }
+
+    function pauseOrResumeEinsatz() {
+      if (currentStatus === 'ended') return;
+
+      if (currentStatus === 'active') {
+        currentStatus = 'paused';
+        addEinsatzLogEntry('Einsatzstatus', 'Einsatz pausiert');
+      } else {
+        currentStatus = 'active';
+        addEinsatzLogEntry('Einsatzstatus', 'Einsatz fortgesetzt');
+      }
+
+      updateEinsatzStatusDisplay();
+      renderAll();
+    }
+
+    function endEinsatz() {
+      if (currentStatus === 'ended') return;
+
+      if (!confirm('Einsatz wirklich beenden? Alle Timer und Alarmtöne werden gestoppt.')) {
+        return;
+      }
+
+      currentStatus = 'ended';
+
+      trupps.forEach(trupp => {
+        if (trupp.innenangriffActive) {
+          const duration = getInnenangriffDuration(trupp);
+          trupp.innenangriffActive = false;
+          trupp.innenangriffStart = null;
+          addLogEntry(trupp, 'Innenangriff automatisch beendet', `Einsatz beendet | Dauer: ${duration}`);
+        }
+
+        trupp.alarmAcknowledged = true;
+        trupp.maydayAcknowledged = true;
+      });
+
+      stopAlarmSound();
+      addEinsatzLogEntry('Einsatzstatus', 'Einsatz beendet');
+      updateEinsatzStatusDisplay();
+      renderAll();
+
+      if (confirm('Einsatz wurde beendet. PDF-Protokoll jetzt exportieren?')) {
+        exportPDF();
+      }
+    }
+
+
+    function handleEndEinsatz() {
+      try {
+        if (typeof endEinsatz === 'function') {
+          endEinsatz();
+          return;
+        }
+      } catch (error) {
+        console.error('Fehler bei endEinsatz():', error);
+      }
+
+      // Fallback, falls die alte Funktion durch einen Scriptfehler nicht erreichbar ist
+      if (!confirm('Einsatz wirklich beenden? Alle Timer und Alarmtöne werden gestoppt.')) {
+        return;
+      }
+
+      currentStatus = 'ended';
+
+      trupps.forEach(trupp => {
+        if (trupp.innenangriffActive) {
+          const duration = typeof getInnenangriffDuration === 'function' ? getInnenangriffDuration(trupp) : 'unbekannt';
+          trupp.innenangriffActive = false;
+          trupp.innenangriffStart = null;
+          if (typeof addLogEntry === 'function') {
+            addLogEntry(trupp, 'Innenangriff automatisch beendet', `Einsatz beendet | Dauer: ${duration}`);
+          }
+        }
+
+        trupp.alarmAcknowledged = true;
+        trupp.maydayAcknowledged = true;
+      });
+
+      if (typeof stopAlarmSound === 'function') stopAlarmSound();
+      if (typeof addEinsatzLogEntry === 'function') addEinsatzLogEntry('Einsatzstatus', 'Einsatz beendet');
+      if (typeof updateEinsatzStatusDisplay === 'function') updateEinsatzStatusDisplay();
+      if (typeof renderAll === 'function') renderAll();
+
+      if (confirm('Einsatz wurde beendet. PDF-Protokoll jetzt exportieren?')) {
+        if (typeof exportPDF === 'function') exportPDF();
+      }
+    }
+
+    function exportPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      let y = 20;
+
+      function checkPageSpace(requiredSpace = 10) {
+        if (y + requiredSpace > 280) {
+          doc.addPage();
+          y = 20;
+        }
+      }
+
+      function addWrappedText(text, x, maxWidth, lineHeight = 4.2) {
+        const lines = doc.splitTextToSize(cleanPDFText(text), maxWidth);
+        lines.forEach(line => {
+          checkPageSpace(lineHeight);
+          doc.text(line, x, y);
+          y += lineHeight;
+        });
+      }
+
+      function addSectionTitle(title) {
+        checkPageSpace(14);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.text(cleanPDFText(title), 20, y);
+        y += 6;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+      }
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text(cleanPDFText(getEinsatzArtTitle()), 20, y);
+      y += 10;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.text(cleanPDFText(`Einsatz-Nr: ${document.getElementById('einsatz-nr').value}`), 20, y);
+      y += 7;
+      doc.text(cleanPDFText(`Einsatzart: ${getEinsatzArt()}`), 20, y);
+      y += 7;
+      doc.text(cleanPDFText(`Einsatzstatus: ${currentStatus === 'active' ? 'Aktiv' : currentStatus === 'paused' ? 'Pausiert' : 'Beendet'}`), 20, y);
+      y += 7;
+      addWrappedText(`Hinweis: ${getEinsatzArtDescription()}`, 20, 175, 4.2);
+      addWrappedText(`Ort: ${document.getElementById('einsatz-ort').value}`, 20, 175, 4.2);
+      doc.text(cleanPDFText(`Export erstellt: ${new Date().toLocaleString('de-DE')}`), 20, y);
+      y += 10;
+
+      addSectionTitle("1. Aktuelle Lageübersicht");
+
+      trupps.forEach((trupp) => {
+        checkPageSpace(8);
+        const standort = getFloorName(trupp.floor || 'eg');
+        const innen = trupp.innenangriffActive ? getInnenangriffDuration(trupp) : 'nicht aktiv';
+        const letzte = getLastMessageDuration(trupp);
+        const alarm = getCriticalReason(trupp) ? ` | ALARM: ${getCriticalReason(trupp)}` : '';
+        addWrappedText(`${trupp.name} | Funk: ${trupp.funk} | Druck: ${trupp.druck} bar | Standort: ${standort} | Innenangriff: ${innen} | Letzte Meldung: ${letzte}${alarm}`, 25, 175, 4.2);
+      });
+
+      y += 5;
+      addSectionTitle("2. Vollständiges Zeitstempel-Protokoll");
+
+      const fullProtocol = buildCompleteProtocol();
+
+      if (fullProtocol.length === 0) {
+        addWrappedText("Keine protokollierten Ereignisse vorhanden.", 25, 175, 4.2);
+      } else {
+        fullProtocol.forEach(entry => {
+          const line = `${entry.time} | ${entry.source} | ${entry.type} | ${entry.text}`;
+          addWrappedText(line, 25, 175, 4.2);
+        });
+      }
+
+      y += 5;
+      addSectionTitle("3. Trupp-Protokolle einzeln");
+
+      trupps.forEach((trupp) => {
+        checkPageSpace(16);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.text(cleanPDFText(`${trupp.name}`), 25, y);
+        y += 5;
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7);
+
+        if (!trupp.log || trupp.log.length === 0) {
+          addWrappedText("Keine Einträge vorhanden.", 30, 175, 4.2);
+        } else {
+          const sortedLog = [...trupp.log].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+          sortedLog.forEach(entry => {
+            addWrappedText(`${entry.time} | ${entry.type} | ${entry.text}`, 30, 175, 4.2);
+          });
+        }
+
+        y += 4;
+      });
+
+      y += 5;
+      addSectionTitle("4. Einsatz-Statusänderungen");
+
+      if (!einsatzLog || einsatzLog.length === 0) {
+        addWrappedText("Keine Einsatzstatus-Änderungen vorhanden.", 25, 175, 4.2);
+      } else {
+        const sortedEinsatzLog = [...einsatzLog].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        sortedEinsatzLog.forEach(entry => {
+          addWrappedText(`${entry.time} | ${entry.type} | ${entry.text}`, 25, 175, 4.2);
+        });
+      }
+
+      doc.save(`Einsatzprotokoll_${document.getElementById('einsatz-nr').value}.pdf`);
+      alert("PDF wurde mit vollständigem Zeitstempel-Protokoll heruntergeladen!");
+    }
+
+    // ==================== TABS ====================
+    function showTab(n) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+      document.getElementById(`tab-${n}`).classList.remove('hidden');
+      
+      document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', idx === n);
+      });
+    }
+
+    // ==================== INITIALISIERUNG ====================
+    function initDemoData() {
+      trupps = [
+        createTrupp("Angriffstrupp 1"),
+        createTrupp("Sicherungstrupp"),
+        createTrupp("Atemschutztrupp 2")
+      ];
+      
+      // Ein paar auf andere Etagen verteilen
+      trupps[0].floor = 'keller';
+      trupps[1].floor = 'og1';
+      trupps[2].druck = 95;
+      checkPressureStatus(trupps[2]);
+
+      // Demo Mitglieder
+      trupps[0].members = [
+        { name: "Max Mustermann", einheit: "LE 12", scannedAt: "17:30" },
+        { name: "Susanne Mustermann", einheit: "LE 12", scannedAt: "17:31" }
+      ];
+
+      trupps.forEach(trupp => {
+        addLogEntry(trupp, 'Initialisierung', `${trupp.name} angelegt mit ${trupp.druck} bar`);
+      });
+
+      addEinsatzLogEntry('Einsatzstatus', 'Einsatz gestartet / aktiv');
+      addEinsatzLogEntry('Einsatz gestartet', 'Demo-Einsatzdaten wurden geladen');
+      addEinsatzLogEntry('Einsatzart', `Einsatzart: ${getEinsatzArt()}`);
+    }
+
+    // Kein automatischer Druckabfall mehr
+
+    window.onload = function() {
+      updateAlarmzeit();
+      initDemoData();
+      renderAll();
+      showTab(0);
+      changeEinsatzArt();
+      updateEinsatzStatusDisplay();
+      
+      // Update clock every minute
+      setInterval(updateAlarmzeit, 60000);
+      if (!renderTimer) {
+        renderTimer = setInterval(() => {
+          renderAll();
+        }, 1000);
+      }
+      
+      console.log("%cAtemGuard Prototyp gestartet! ✅", "color: #ef4444; font-size: 16px");
+      console.log('AtemGuard Funktionen geprüft:', {
+        handleEndEinsatz: typeof handleEndEinsatz,
+        endEinsatz: typeof endEinsatz,
+        exportPDF: typeof exportPDF
+      });
+    };
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then(() => console.log('AtemGuard PWA Service Worker aktiv'))
+          .catch(err => console.warn('Service Worker Fehler:', err));
+      });
+    }
+  </script>
+
+</body>
+</html>
