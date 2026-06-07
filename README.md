@@ -1,20 +1,17 @@
-# AtemGuard Tablet PWA
+# AtemGuard Tablet-Leitstand
 
-Tablet-optimierte Version für den Einsatz-/Übungsbetrieb.
+Diese Version ist fuer Tablet-Querformat optimiert.
 
-## Neu
-- größere Buttons
-- größere Truppkarten
-- Tablet-Quickbar
-- Querformat optimiert
-- Fokusmodus für Atemschutzüberwachung
+## Layout
+- oben: Einsatzstatus und Warnleiste
+- links: Truppverwaltung
+- rechts: Gebaeude / Lage
+- unten: Atemschutzueberwachung
+- Drag-and-Drop bleibt erhalten
 - QR-Scan bleibt erhalten
 
 ## Upload
-Alle Dateien aus diesem Ordner in dein GitHub-Repository hochladen und bestehende Dateien ersetzen.
+Alle Dateien aus diesem Ordner auf GitHub hochladen und bestehende Dateien ersetzen.
 
-Danach öffnen:
+URL:
 https://timwullen1-blip.github.io/atemguard/
-
-## Empfehlung
-Tablet im Querformat nutzen.
