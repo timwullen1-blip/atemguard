@@ -1,17 +1,13 @@
-# AtemGuard Tablet-Leitstand
+# AtemGuard Web Tablet Tabs
 
-Diese Version ist fuer Tablet-Querformat optimiert.
+Diese Version bleibt bei der normalen Web-Oberflaeche mit Tabs.
 
-## Layout
-- oben: Einsatzstatus und Warnleiste
-- links: Truppverwaltung
-- rechts: Gebaeude / Lage
-- unten: Atemschutzueberwachung
-- Drag-and-Drop bleibt erhalten
+## Neu
+- Tablet-Tabbar oben
+- Reihenfolge: Atemschutz, Trupps, Gebaeude, Dashboard
+- groessere Buttons fuer Tablet
 - QR-Scan bleibt erhalten
+- keine Leitstand/Split-Screen-Ansicht
 
 ## Upload
-Alle Dateien aus diesem Ordner auf GitHub hochladen und bestehende Dateien ersetzen.
-
-URL:
-https://timwullen1-blip.github.io/atemguard/
+Alle Dateien aus diesem Ordner in GitHub hochladen und bestehende Dateien ersetzen.

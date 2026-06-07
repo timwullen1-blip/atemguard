@@ -54,101 +54,104 @@
 }
 
 
-    /* ==================== TABLET-LEITSTAND ==================== */
-    #tablet-leitstand {
+    /* ==================== TABLET WEB-TABS ==================== */
+    .tablet-tabbar {
       display: none;
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      background: rgba(24, 24, 27, 0.98);
+      border-bottom: 1px solid #3f3f46;
+      padding: 0.75rem;
+      gap: 0.75rem;
+      overflow-x: auto;
     }
 
-    .leitstand-card {
-      background: #18181b;
-      border: 1px solid #27272a;
-      border-radius: 1.5rem;
-      padding: 1.25rem;
-    }
-
-    .leitstand-title {
-      font-size: 1.45rem;
-      font-weight: 800;
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
-
-    .leitstand-trupp-card {
+    .tablet-tabbar button {
+      min-height: 58px;
+      min-width: 165px;
+      border-radius: 1rem;
+      font-size: 1.05rem;
+      font-weight: 900;
       background: #27272a;
       border: 1px solid #3f3f46;
-      border-left: 6px solid #22c55e;
-      border-radius: 1.25rem;
-      padding: 1rem;
-      margin-bottom: 0.8rem;
-      cursor: grab;
+      white-space: nowrap;
     }
 
-    .leitstand-trupp-card.red {
-      border-left-color: #ef4444;
-      animation: alarmPulse 700ms infinite;
+    .tablet-tabbar button.active {
+      background: #dc2626;
+      border-color: #ef4444;
+      color: white;
     }
 
-    .leitstand-pressure {
-      font-size: 3.2rem;
-      line-height: 1;
-      font-family: monospace;
-      font-weight: 900;
-      letter-spacing: -0.08em;
-    }
+    @media (max-width: 1180px) {
+      header {
+        position: static !important;
+        padding: 1rem !important;
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 1rem;
+      }
 
-    .leitstand-floor {
-      background: #09090b;
-      border: 2px dashed #3f3f46;
-      border-radius: 1.25rem;
-      padding: 1rem;
-      min-height: 150px;
-    }
+      header > div:first-child {
+        justify-content: center;
+      }
 
-    .leitstand-floor.dragover {
-      border-color: #22c55e;
-      background: #064e3b;
-    }
+      header > div:last-child {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem !important;
+      }
 
-    .leitstand-floor-trupp {
-      background: #27272a;
-      border-radius: 0.9rem;
-      padding: 0.8rem;
-      margin-top: 0.6rem;
-      border-left: 5px solid #22c55e;
-      cursor: grab;
-    }
+      header button,
+      header select,
+      header input,
+      #einsatz-status-display {
+        min-height: 58px;
+        font-size: 1.05rem !important;
+      }
 
-    .leitstand-floor-trupp.red {
-      border-left-color: #ef4444;
-      animation: alarmPulse 700ms infinite;
-    }
-
-    .leitstand-action {
-      min-height: 54px;
-      border-radius: 1rem;
-      font-weight: 800;
-      padding: 0.7rem 1rem;
-    }
-
-    @media (min-width: 760px) {
-      body.tablet-leitstand-mode header,
-      body.tablet-leitstand-mode .sticky.top-20,
-      body.tablet-leitstand-mode .tab-content {
+      .sticky.top-20 {
         display: none !important;
       }
 
-      body.tablet-leitstand-mode #tablet-leitstand {
-        display: block;
+      .tablet-tabbar {
+        display: flex;
       }
 
-      body.tablet-leitstand-mode .p-8 {
-        padding: 0 !important;
+      .p-8 {
+        padding: 1rem !important;
       }
 
-      body.tablet-leitstand-mode {
-        overflow-x: hidden;
+      #dashboard-trupps,
+      #trupp-list,
+      #atemschutz-container,
+      #building-floors {
+        grid-template-columns: 1fr 1fr !important;
+      }
+
+      button {
+        min-height: 54px;
+        touch-action: manipulation;
+      }
+
+      input,
+      select {
+        min-height: 54px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      header > div:last-child,
+      #dashboard-trupps,
+      #trupp-list,
+      #atemschutz-container,
+      #building-floors {
+        grid-template-columns: 1fr !important;
+      }
+
+      .tablet-tabbar button {
+        min-width: 150px;
       }
     }
 
@@ -235,77 +238,6 @@
 
     <!-- Tab Contents -->
     <div class="p-8">
-
-      <!-- TABLET LEITSTAND -->
-      <div id="tablet-leitstand" class="p-4">
-        <div class="grid grid-cols-12 gap-4 mb-4">
-          <div class="col-span-12 xl:col-span-4 leitstand-card">
-            <div class="flex items-center justify-between gap-4">
-              <div>
-                <div class="text-zinc-400 text-sm">AtemGuard</div>
-                <div class="text-3xl font-black text-red-500">Tablet-Leitstand</div>
-              </div>
-              <button onclick="toggleLeitstandMode()" class="leitstand-action bg-zinc-800 hover:bg-zinc-700 px-5">
-                Normalansicht
-              </button>
-            </div>
-          </div>
-
-          <div class="col-span-12 xl:col-span-4 leitstand-card">
-            <div class="text-zinc-400 text-sm">Einsatz</div>
-            <div class="grid grid-cols-3 gap-3 mt-2">
-              <div>
-                <div class="text-xs text-zinc-500">Nr.</div>
-                <div id="leitstand-einsatz-nr" class="font-bold text-lg">-</div>
-              </div>
-              <div>
-                <div class="text-xs text-zinc-500">Art</div>
-                <div id="leitstand-einsatz-art" class="font-bold text-lg">-</div>
-              </div>
-              <div>
-                <div class="text-xs text-zinc-500">Alarmzeit</div>
-                <div id="leitstand-alarmzeit" class="font-mono font-bold text-lg">-</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-span-12 xl:col-span-4 leitstand-card">
-            <div id="leitstand-status" class="text-2xl font-black rounded-2xl px-5 py-4 bg-emerald-600 text-black">
-              🟢 Einsatzstatus: Aktiv
-            </div>
-          </div>
-        </div>
-
-        <div id="leitstand-warning" class="rounded-3xl px-6 py-5 text-2xl font-black bg-emerald-600 text-black mb-4">
-          🟢 Alle Trupps melden regelmäßig
-        </div>
-
-        <div class="grid grid-cols-12 gap-4">
-          <div class="col-span-12 lg:col-span-4 leitstand-card">
-            <div class="leitstand-title">👥 Trupps</div>
-            <button onclick="addTrupp()" class="leitstand-action bg-red-600 hover:bg-red-700 w-full mb-4">
-              ➕ Trupp hinzufügen
-            </button>
-            <div id="leitstand-trupps"></div>
-          </div>
-
-          <div class="col-span-12 lg:col-span-8 leitstand-card">
-            <div class="flex items-center justify-between gap-4 mb-4">
-              <div class="leitstand-title mb-0">🏢 Gebäude / Lage</div>
-              <button onclick="openFloorModal()" class="leitstand-action bg-zinc-800 hover:bg-zinc-700">
-                ➕ Bereich hinzufügen
-              </button>
-            </div>
-            <div id="leitstand-building" class="grid grid-cols-2 xl:grid-cols-3 gap-3"></div>
-          </div>
-
-          <div class="col-span-12 leitstand-card">
-            <div class="leitstand-title">🛡️ Atemschutzüberwachung</div>
-            <div id="leitstand-atemschutz" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
-          </div>
-        </div>
-      </div>
-
       <!-- TAB 0: Dashboard -->
       <div id="tab-0" class="tab-content">
         <div id="dashboard-warning" class="mb-6 rounded-3xl px-8 py-5 text-xl font-bold flex items-center justify-between bg-emerald-600 text-black">
@@ -1496,265 +1428,6 @@ function getMissionMinutes(trupp) {
       }
     }
 
-
-    function shouldUseLeitstandMode() {
-      return window.innerWidth >= 760;
-    }
-
-    function enableLeitstandMode() {
-      document.body.classList.add('tablet-leitstand-mode');
-      renderLeitstand();
-    }
-
-    function toggleLeitstandMode() {
-      document.body.classList.toggle('tablet-leitstand-mode');
-      renderLeitstand();
-    }
-
-    function leitstandDrop(ev) {
-      ev.preventDefault();
-      ev.currentTarget.classList.remove('dragover');
-
-      const truppId = ev.dataTransfer.getData("text");
-      const floorId = ev.currentTarget.dataset.floorId;
-
-      const trupp = trupps.find(t => t.id === truppId);
-      if (trupp && floorId) {
-        const oldFloor = trupp.floor || 'eg';
-        trupp.floor = floorId;
-
-        if (typeof addLogEntry === 'function') {
-          addLogEntry(trupp, 'Standort geändert', `${getFloorName(oldFloor)} -> ${getFloorName(floorId)}`);
-        }
-        if (typeof logTruppChange === 'function') {
-          logTruppChange(trupp, 'Standort', getFloorName(oldFloor), getFloorName(floorId));
-        }
-      }
-
-      renderAll();
-    }
-
-    function leitstandDragOver(ev) {
-      ev.preventDefault();
-      ev.currentTarget.classList.add('dragover');
-    }
-
-    function leitstandDragLeave(ev) {
-      ev.currentTarget.classList.remove('dragover');
-    }
-
-    function renderLeitstand() {
-      const root = document.getElementById('tablet-leitstand');
-      if (!root) return;
-
-      const einsatzNr = document.getElementById('einsatz-nr')?.value || '-';
-      const einsatzArt = typeof getEinsatzArt === 'function' ? getEinsatzArt() : '-';
-      const alarmzeit = document.getElementById('alarmzeit')?.textContent || '-';
-
-      const nrEl = document.getElementById('leitstand-einsatz-nr');
-      const artEl = document.getElementById('leitstand-einsatz-art');
-      const alarmEl = document.getElementById('leitstand-alarmzeit');
-      if (nrEl) nrEl.textContent = einsatzNr;
-      if (artEl) artEl.textContent = einsatzArt;
-      if (alarmEl) alarmEl.textContent = alarmzeit;
-
-      const statusEl = document.getElementById('leitstand-status');
-      if (statusEl) {
-        if (currentStatus === 'ended') {
-          statusEl.className = 'text-2xl font-black rounded-2xl px-5 py-4 bg-red-600 text-white';
-          statusEl.textContent = '🔴 Einsatzstatus: Beendet';
-        } else if (currentStatus === 'paused') {
-          statusEl.className = 'text-2xl font-black rounded-2xl px-5 py-4 bg-yellow-500 text-black';
-          statusEl.textContent = '🟡 Einsatzstatus: Pausiert';
-        } else {
-          statusEl.className = 'text-2xl font-black rounded-2xl px-5 py-4 bg-emerald-600 text-black';
-          statusEl.textContent = '🟢 Einsatzstatus: Aktiv';
-        }
-      }
-
-      renderLeitstandWarning();
-      renderLeitstandTrupps();
-      renderLeitstandBuilding();
-      renderLeitstandAtemschutz();
-    }
-
-    function renderLeitstandWarning() {
-      const el = document.getElementById('leitstand-warning');
-      if (!el) return;
-
-      let due = 0;
-      let overdue = 0;
-      let critical = 0;
-
-      trupps.forEach(trupp => {
-        const minutesSinceUpdate = (Date.now() - trupp.lastUpdate) / 60000;
-        if (trupp.maydayActive || trupp.druck < 50 || minutesSinceUpdate >= 10) critical++;
-        else if (minutesSinceUpdate >= 7) overdue++;
-        else if (minutesSinceUpdate >= 5) due++;
-      });
-
-      if (critical > 0) {
-        el.className = 'rounded-3xl px-6 py-5 text-2xl font-black bg-red-700 text-white mb-4 alarm-active';
-        el.textContent = `🚨 KRITISCH / MAYDAY: ${critical} Trupp(s) betroffen`;
-      } else if (overdue > 0) {
-        el.className = 'rounded-3xl px-6 py-5 text-2xl font-black bg-red-600 text-white mb-4';
-        el.textContent = `🔴 Überfällig: ${overdue} Trupp(s)`;
-      } else if (due > 0) {
-        el.className = 'rounded-3xl px-6 py-5 text-2xl font-black bg-yellow-500 text-black mb-4';
-        el.textContent = `🟡 Druckmeldung fällig: ${due} Trupp(s)`;
-      } else {
-        el.className = 'rounded-3xl px-6 py-5 text-2xl font-black bg-emerald-600 text-black mb-4';
-        el.textContent = '🟢 Alle Trupps melden regelmäßig';
-      }
-    }
-
-    function renderLeitstandTrupps() {
-      const container = document.getElementById('leitstand-trupps');
-      if (!container) return;
-
-      container.innerHTML = '';
-
-      trupps.forEach(trupp => {
-        const critical = getCriticalReason(trupp);
-        const card = document.createElement('div');
-        card.className = `leitstand-trupp-card ${critical ? 'red' : ''}`;
-        card.draggable = true;
-        card.ondragstart = (e) => e.dataTransfer.setData("text", trupp.id);
-
-        card.innerHTML = `
-          <div class="flex justify-between items-start gap-2">
-            <div>
-              <div class="text-xl font-black">${trupp.maydayActive ? '🚨 ' : ''}${trupp.name}</div>
-              <div class="text-sm text-zinc-400">${trupp.funk}</div>
-            </div>
-            <button onclick="removeTrupp('${trupp.id}')" class="bg-zinc-900 hover:bg-red-900 px-3 py-2 rounded-xl">🗑️</button>
-          </div>
-          <div class="grid grid-cols-2 gap-2 mt-3 text-sm">
-            <div class="bg-zinc-900 rounded-xl p-2">
-              <div class="text-zinc-500">Standort</div>
-              <div class="font-bold text-emerald-400">${getFloorName(trupp.floor || 'eg')}</div>
-            </div>
-            <div class="bg-zinc-900 rounded-xl p-2">
-              <div class="text-zinc-500">Druck</div>
-              <div class="font-bold">${trupp.druck} bar</div>
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-2 mt-3">
-            <button onclick="openPressureModal('${trupp.id}')" class="leitstand-action bg-zinc-800 hover:bg-zinc-700">Druck</button>
-            <button onclick="scanAGT('${trupp.id}')" class="leitstand-action bg-emerald-700 hover:bg-emerald-800">QR</button>
-          </div>
-          <button onclick="triggerMayday('${trupp.id}')" class="leitstand-action bg-red-700 hover:bg-red-800 w-full mt-2">🚨 MAYDAY</button>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    function renderLeitstandBuilding() {
-      const container = document.getElementById('leitstand-building');
-      if (!container) return;
-
-      if (typeof sortFloors === 'function') sortFloors();
-
-      container.innerHTML = '';
-
-      floors.forEach(floor => {
-        const floorEl = document.createElement('div');
-        floorEl.className = 'leitstand-floor';
-        floorEl.dataset.floorId = floor.id;
-        floorEl.ondrop = leitstandDrop;
-        floorEl.ondragover = leitstandDragOver;
-        floorEl.ondragleave = leitstandDragLeave;
-
-        const assigned = trupps.filter(t => (t.floor || 'eg') === floor.id);
-
-        floorEl.innerHTML = `
-          <div class="flex items-center justify-between gap-2">
-            <div class="font-black text-lg">${floor.name}</div>
-            ${floor.id !== 'eg' ? `<button onclick="removeFloor(event, '${floor.id}')" class="text-zinc-500 hover:text-red-400">🗑️</button>` : ''}
-          </div>
-          <div class="text-xs text-zinc-500 mt-1">Trupp hier ablegen</div>
-        `;
-
-        assigned.forEach(trupp => {
-          const t = document.createElement('div');
-          const critical = getCriticalReason(trupp);
-          t.className = `leitstand-floor-trupp ${critical ? 'red' : ''}`;
-          t.draggable = true;
-          t.ondragstart = (e) => e.dataTransfer.setData("text", trupp.id);
-          t.innerHTML = `
-            <div class="font-bold">${trupp.maydayActive ? '🚨 ' : ''}${trupp.name}</div>
-            <div class="text-sm text-zinc-400">${trupp.druck} bar • Meldung ${getLastMessageDuration(trupp)}</div>
-          `;
-          floorEl.appendChild(t);
-        });
-
-        container.appendChild(floorEl);
-      });
-    }
-
-    function renderLeitstandAtemschutz() {
-      const container = document.getElementById('leitstand-atemschutz');
-      if (!container) return;
-
-      container.innerHTML = '';
-
-      trupps.forEach(trupp => {
-        const minutesSinceUpdate = (Date.now() - trupp.lastUpdate) / 60000;
-        const critical = getCriticalReason(trupp);
-        let status = `🟢 Meldung ${getLastMessageDuration(trupp)}`;
-
-        if (critical === 'MAYDAY ausgelöst') status = '🚨 MAYDAY AUSGELÖST';
-        else if (critical === 'Druck unter 50 bar') status = '🚨 Druck unter 50 bar';
-        else if (minutesSinceUpdate >= 10) status = '🚨 Keine Rückmeldung 10 Min';
-        else if (minutesSinceUpdate >= 7) status = '🔴 Überfällig';
-        else if (minutesSinceUpdate >= 5) status = '🟡 Druckmeldung fällig';
-
-        const card = document.createElement('div');
-        card.className = `bg-zinc-800 rounded-3xl p-5 border ${critical ? 'border-red-500 alarm-active' : 'border-zinc-700'}`;
-        card.innerHTML = `
-          <div class="flex justify-between items-start gap-3">
-            <div>
-              <div class="text-2xl font-black">${trupp.maydayActive ? '🚨 ' : ''}${trupp.name}</div>
-              <div class="text-zinc-400">${trupp.funk} • ${getFloorName(trupp.floor || 'eg')}</div>
-            </div>
-            <div class="px-3 py-1 rounded-xl text-sm font-bold ${critical ? 'bg-red-600 text-white' : 'bg-emerald-500 text-black'}">${critical ? 'ALARM' : 'OK'}</div>
-          </div>
-
-          <div class="mt-4">
-            <div class="leitstand-pressure">${trupp.druck}<span class="text-xl tracking-normal ml-2">bar</span></div>
-            <div class="text-lg font-bold mt-2">${status}</div>
-          </div>
-
-          <div class="grid grid-cols-3 gap-2 mt-4 text-center">
-            <div class="bg-zinc-900 rounded-xl p-3">
-              <div class="text-xs text-zinc-500">Innen</div>
-              <div class="font-mono font-bold">${trupp.innenangriffActive ? getInnenangriffDuration(trupp) : '--:--'}</div>
-            </div>
-            <div class="bg-zinc-900 rounded-xl p-3">
-              <div class="text-xs text-zinc-500">Meldung</div>
-              <div class="font-mono font-bold">${getLastMessageDuration(trupp)}</div>
-            </div>
-            <div class="bg-zinc-900 rounded-xl p-3">
-              <div class="text-xs text-zinc-500">AGT</div>
-              <div class="font-mono font-bold">${trupp.members ? trupp.members.length : 0}</div>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-2 mt-4">
-            <button onclick="openPressureModal('${trupp.id}')" class="leitstand-action bg-zinc-700 hover:bg-zinc-600">Druckmeldung</button>
-            ${trupp.innenangriffActive ? `
-              <button onclick="stopInnenangriff('${trupp.id}')" class="leitstand-action bg-zinc-700 hover:bg-zinc-600">⏹ Innen Ende</button>
-            ` : `
-              <button onclick="startInnenangriff('${trupp.id}')" class="leitstand-action bg-emerald-700 hover:bg-emerald-800">▶ Innen Start</button>
-            `}
-          </div>
-          <button onclick="triggerMayday('${trupp.id}')" class="leitstand-action bg-red-700 hover:bg-red-800 w-full mt-2">🚨 MAYDAY</button>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-
     function renderAll() {
       updateAutomaticTruppStatusLogs();
       renderTruppList();
@@ -2109,6 +1782,14 @@ function getMissionMinutes(trupp) {
       alert("PDF wurde mit vollständigem Zeitstempel-Protokoll heruntergeladen!");
     }
 
+
+    function updateTabletTabs(activeIndex) {
+      [0,1,2,3].forEach(i => {
+        const btn = document.getElementById(`tablet-tab-${i}`);
+        if (btn) btn.classList.toggle('active', i === activeIndex);
+      });
+    }
+
     // ==================== TABS ====================
     function showTab(n) {
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
@@ -2117,6 +1798,8 @@ function getMissionMinutes(trupp) {
       document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
         btn.classList.toggle('active', idx === n);
       });
+
+      updateTabletTabs(n);
     }
 
     // ==================== INITIALISIERUNG ====================
@@ -2154,8 +1837,7 @@ function getMissionMinutes(trupp) {
       updateAlarmzeit();
       initDemoData();
       renderAll();
-      showTab(0);
-      if (shouldUseLeitstandMode()) enableLeitstandMode();
+      showTab(window.innerWidth <= 1180 ? 2 : 0);
       changeEinsatzArt();
       updateEinsatzStatusDisplay();
       

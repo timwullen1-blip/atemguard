@@ -1,7 +1,7 @@
 {
-  "name": "AtemGuard Leitstand",
+  "name": "AtemGuard Web Tabs",
   "short_name": "AtemGuard",
-  "description": "Tablet-Leitstand fuer Atemschutzueberwachung mit QR-Scan.",
+  "description": "Einsatz- und Atemschutzüberwachung mit QR-Scan und Protokoll.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
