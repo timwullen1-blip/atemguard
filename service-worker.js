@@ -1,4 +1,4 @@
-const CACHE_NAME = 'atemguard-pwa-beta-v1';
+const CACHE_NAME = 'atemguard-tablet-stable-v2-20260607';
 const ASSETS = [
   './',
   './index.html',
@@ -22,7 +22,18 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).then(response => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put('./index.html', clone));
+        return response;
+      }).catch(() => caches.match('./index.html'))
+    );
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request).catch(() => caches.match('./index.html')))
+    caches.match(event.request).then(cached => cached || fetch(event.request))
   );
 });

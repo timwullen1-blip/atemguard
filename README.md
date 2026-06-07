@@ -1,20 +1,19 @@
-# AtemGuard Tablet Web Stable
+# AtemGuard Tablet Stable V2
 
-Stabile Tablet-Version auf Basis der funktionierenden Web-App.
+Diese Version basiert direkt auf der funktionierenden Hauptversion und ändert nur die Tablet-Bedienung.
 
 ## Wichtig
-- Keine Leitstand-/Split-Screen-Sonderlogik
-- Trupp hinzufügen bleibt original
-- Trupp löschen bleibt original
-- QR-Scan bleibt original
-- Gebäude-Drag-and-Drop bleibt original
-- Nur größere Buttons, Karten und Tablet-Tabbar
+- Trupp hinzufügen im Atemschutz-Tab und Trupps-Tab
+- Trupp löschen direkt auf den Karten
+- Sicherheitsabfrage beim Löschen
+- QR-Scan bleibt erhalten
+- Service Worker Cache-Version wurde erhöht
 
-## Reihenfolge Tablet-Tabbar
-1. Atemschutz
-2. Trupps
-3. Gebäude
-4. Dashboard
+## Nach Upload
+Auf dem Tablet diese URL öffnen:
+https://timwullen1-blip.github.io/atemguard/?v=stable-v2
 
-## Upload
-Alle Dateien aus diesem Ordner auf GitHub hochladen und vorhandene Dateien ersetzen.
+Falls die alte Version angezeigt wird:
+1. installierte AtemGuard-App vom Homescreen löschen
+2. Browser-Tab schließen
+3. URL mit ?v=stable-v2 neu öffnen

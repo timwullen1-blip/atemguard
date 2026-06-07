@@ -54,7 +54,7 @@
 }
 
 
-    /* ==================== STABILE TABLET-WEBVERSION ==================== */
+    /* ==================== TABLET STABLE V2 ==================== */
     .tablet-tabbar {
       display: none;
       position: sticky;
@@ -68,10 +68,10 @@
     }
 
     .tablet-tabbar button {
-      min-height: 58px;
+      min-height: 60px;
       min-width: 170px;
       border-radius: 1rem;
-      font-size: 1.05rem;
+      font-size: 1.1rem;
       font-weight: 900;
       background: #27272a;
       border: 1px solid #3f3f46;
@@ -83,7 +83,31 @@
     .tablet-tabbar button.active {
       background: #dc2626;
       border-color: #ef4444;
+    }
+
+    .tablet-action-row {
+      display: none;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .tablet-action-row button {
+      min-height: 62px;
+      border-radius: 1rem;
+      font-weight: 900;
+      padding: 0 1.25rem;
+      touch-action: manipulation;
+    }
+
+    .tablet-delete-btn {
+      min-width: 56px;
+      min-height: 56px;
+      border-radius: 1rem;
+      background: #7f1d1d;
       color: white;
+      font-size: 1.2rem;
+      font-weight: 900;
+      touch-action: manipulation;
     }
 
     @media (max-width: 1180px) {
@@ -129,7 +153,8 @@
         display: none !important;
       }
 
-      .tablet-tabbar {
+      .tablet-tabbar,
+      .tablet-action-row {
         display: flex;
       }
 
@@ -182,6 +207,10 @@
       .tablet-tabbar button {
         min-width: 150px;
       }
+
+      .tablet-action-row {
+        flex-direction: column;
+      }
     }
 
   </style>
@@ -193,7 +222,6 @@
   <meta name="apple-mobile-web-app-title" content="AtemGuard">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.svg">
-
 </head>
 <body class="bg-zinc-950 text-zinc-100 min-h-screen">
   <div class="max-w-screen-2xl mx-auto">
@@ -254,6 +282,15 @@
         </button>
       </div>
     </header>
+
+
+    <!-- Tablet Tabbar Stable V2 -->
+    <div class="tablet-tabbar">
+      <button onclick="showTab(2)" id="tablet-tab-2">🛡️ Atemschutz</button>
+      <button onclick="showTab(1)" id="tablet-tab-1">👥 Trupps</button>
+      <button onclick="showTab(3)" id="tablet-tab-3">🏢 Gebäude</button>
+      <button onclick="showTab(0)" id="tablet-tab-0">📊 Dashboard</button>
+    </div>
 
     <!-- Tabs -->
     <div class="px-8 pt-4 border-b border-zinc-800 bg-zinc-900 sticky top-20 z-40">
@@ -329,6 +366,16 @@
       <!-- TAB 2: Atemschutz -->
       <div id="tab-2" class="tab-content hidden">
         <h2 class="text-3xl font-bold mb-8">Atemschutzüberwachung</h2>
+
+        <div class="tablet-action-row">
+          <button onclick="addTrupp()" class="bg-red-600 hover:bg-red-700 text-white flex-1">
+            ➕ Trupp hinzufügen
+          </button>
+          <button onclick="showTab(1)" class="bg-zinc-800 hover:bg-zinc-700 text-white flex-1">
+            👥 Truppverwaltung öffnen
+          </button>
+        </div>
+
         <div id="atemschutz-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         
         <div class="mt-12 bg-zinc-900 rounded-3xl p-8">
@@ -801,6 +848,30 @@ function getMissionMinutes(trupp) {
       renderAll();
     }
 
+    function safeDeleteTrupp(id) {
+      const trupp = trupps.find(t => t.id === id);
+      if (!trupp) {
+        alert('Trupp wurde nicht gefunden.');
+        return;
+      }
+
+      if (!confirm(`${trupp.name} wirklich löschen?`)) {
+        return;
+      }
+
+      if (typeof addLogEntry === 'function') {
+        addLogEntry(trupp, 'Trupp gelöscht', `${trupp.name} wurde aus der Überwachung entfernt`);
+      }
+      if (typeof addEinsatzLogEntry === 'function') {
+        addEinsatzLogEntry('Trupp gelöscht', `${trupp.name} wurde entfernt`);
+      }
+
+      trupps = trupps.filter(t => t.id !== id);
+      renderAll();
+    }
+
+
+
     // ==================== QR-Scan Simulation ====================
     function scanAGT(truppId) {
       currentScanTruppId = truppId;
@@ -829,13 +900,6 @@ function getMissionMinutes(trupp) {
             <div id="qr-reader" class="hidden bg-black rounded-2xl overflow-hidden mb-4"></div>
             <div id="qr-scan-status" class="text-sm text-zinc-400 mb-4"></div>
             <div id="qr-agt-list" class="space-y-2 mb-6 hidden"></div>
-
-            <div class="bg-zinc-800 rounded-2xl p-4 mb-6">
-              <div class="text-sm text-zinc-400 mb-1">QR-Code Testformat</div>
-              <div class="font-mono text-xs text-zinc-300 break-all">
-                {"name":"Max Mustermann","einheit":"LE 12","agtNr":"4711","funktion":"Truppführer"}
-              </div>
-            </div>
 
             <button onclick="closeQRModal()" class="w-full py-3 text-zinc-400 hover:text-white">Abbrechen</button>
           </div>
@@ -957,7 +1021,7 @@ function getMissionMinutes(trupp) {
         if (status) status.textContent = 'Kamera aktiv. QR-Code vor die Kamera halten.';
       } catch (error) {
         console.error(error);
-        if (status) status.textContent = 'Kamera konnte nicht gestartet werden. Bitte HTTPS/localhost und Kameraberechtigung prüfen.';
+        if (status) status.textContent = 'Kamera konnte nicht gestartet werden. HTTPS und Kameraberechtigung prüfen.';
       }
     }
 
@@ -980,7 +1044,7 @@ function getMissionMinutes(trupp) {
     }
 
     async function closeQRModal() {
-      if (qrScannerInstance) {
+      if (typeof qrScannerInstance !== 'undefined' && qrScannerInstance) {
         await qrScannerInstance.stop().catch(() => {});
         qrScannerInstance.clear();
         qrScannerInstance = null;
@@ -1054,7 +1118,7 @@ function getMissionMinutes(trupp) {
               <div class="font-bold text-xl">${trupp.name}</div>
               <div class="text-sm text-zinc-400">${trupp.funk} • ${trupp.fahrzeug}</div>
             </div>
-            <button onclick="removeTrupp('${trupp.id}')" class="text-red-400 hover:text-red-500">
+            <button onclick="safeDeleteTrupp('${trupp.id}')" class="tablet-delete-btn hover:bg-red-800">
               <i class="fas fa-trash"></i>
             </button>
           </div>
@@ -1179,10 +1243,16 @@ function getMissionMinutes(trupp) {
           ${alarmIsActive ? 'alarm-active' : ''}
         `;
         card.innerHTML = `
-          <div class="flex justify-between">
-            <div class="font-bold text-xl">${trupp.name}</div>
-            <div class="px-4 py-1 rounded-full text-xs font-semibold ${trupp.color === 'red' ? 'status-red' : trupp.color === 'yellow' ? 'status-yellow' : 'status-green'}">
-              ${trupp.color === 'red' ? '🔴 KRITISCH' : trupp.color === 'yellow' ? '🟡 NIEDRIG' : '🟢 OK'}
+          <div class="flex justify-between items-start gap-3">
+            <div>
+              <div class="font-bold text-xl">${trupp.name}</div>
+              <div class="text-xs text-zinc-400 mt-1">${trupp.funk || ''}</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="px-4 py-1 rounded-full text-xs font-semibold ${trupp.color === 'red' ? 'status-red' : trupp.color === 'yellow' ? 'status-yellow' : 'status-green'}">
+                ${trupp.color === 'red' ? '🔴 KRITISCH' : trupp.color === 'yellow' ? '🟡 NIEDRIG' : '🟢 OK'}
+              </div>
+              <button onclick="safeDeleteTrupp('${trupp.id}')" class="tablet-delete-btn" title="Trupp löschen">🗑️</button>
             </div>
           </div>
           
@@ -1878,7 +1948,7 @@ function getMissionMinutes(trupp) {
         }, 1000);
       }
       
-      console.log("%cAtemGuard Prototyp gestartet! ✅", "color: #ef4444; font-size: 16px");
+      console.log("%cAtemGuard Tablet Stable V2 gestartet! ✅", "color: #ef4444; font-size: 16px");
       console.log('AtemGuard Funktionen geprüft:', {
         handleEndEinsatz: typeof handleEndEinsatz,
         endEinsatz: typeof endEinsatz,
@@ -1891,7 +1961,7 @@ function getMissionMinutes(trupp) {
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./service-worker.js')
-          .then(() => console.log('AtemGuard PWA Service Worker aktiv'))
+          .then(() => console.log('AtemGuard Stable V2 Service Worker aktiv'))
           .catch(err => console.warn('Service Worker Fehler:', err));
       });
     }
