@@ -1,6 +1,5 @@
-# TruppControl OfflineCSS V1
+TruppControl Android Fallback SAFE
 
-Ohne Tailwind-CDN.
+Nur CSS-Fallback. JS/PDF unverändert.
 
-Öffnen:
-https://timwullen1-blip.github.io/TruppControl-/?v=offline-css-v1
+URL: https://timwullen1-blip.github.io/TruppControl-/?v=android-fallback-safe

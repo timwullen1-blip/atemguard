@@ -1,8 +1,8 @@
 {
   "name": "TruppControl",
   "short_name": "TruppControl",
-  "description": "OfflineCSS Version ohne Tailwind CDN.",
-  "start_url": "./index.html?v=offline-css-v1",
+  "description": "Android Fallback CSS Safe",
+  "start_url": "./index.html?v=android-fallback-safe",
   "scope": "./",
   "display": "standalone",
   "background_color": "#09090b",
