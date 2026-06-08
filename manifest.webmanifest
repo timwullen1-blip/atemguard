@@ -1,8 +1,8 @@
 {
-  "name": "TruppControl",
+  "name": "TruppControl TouchFix",
   "short_name": "TruppControl",
-  "description": "Digitale Trupp- und Atemschutzüberwachung mit QR-Scan, Einsatzdokumentation und PDF-Protokoll.",
-  "start_url": "./index.html?v=truppcontrol-v1",
+  "description": "TruppControl mit Tablet-Touch-Fix für Inhaltsbuttons.",
+  "start_url": "./index.html?v=touchfix-v2",
   "scope": "./",
   "display": "standalone",
   "background_color": "#09090b",
