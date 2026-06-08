@@ -1,11 +1,9 @@
-# TruppControl Android Legacy DesignFix V3
+# TruppControl Android Legacy DesignFix V4
 
-Fix gegenüber V2:
-- doppelter Touch-Fallback entfernt
-- dadurch wird beim Klick auf "Trupp hinzufügen" nicht mehr doppelt angelegt
-- AGT Scan Button und Gebäude Button bleiben normale onclick-Buttons
-- DesignFix bleibt enthalten
-- PDF-Code bleibt unverändert
+Fix:
+- AGT Scan Button gezielt per Touch-Fallback
+- Gebäude hinzufügen gezielt per Touch-Fallback
+- Trupp hinzufügen wird nicht vom Touch-Fallback behandelt, damit keine Doppel-Trupps entstehen
 
 Öffnen:
-https://timwullen1-blip.github.io/TruppControl-/?v=android-legacy-design-v3
+https://timwullen1-blip.github.io/TruppControl-/?v=android-legacy-design-v4

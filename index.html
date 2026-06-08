@@ -509,6 +509,16 @@
       -webkit-tap-highlight-color: rgba(239, 68, 68, 0.35);
     }
 
+  
+    /* ==================== ANDROID TAP FIX V4 ==================== */
+    button[onclick*="scanAGT"],
+    button[onclick*="openFloorModal"],
+    button[onclick*="addFloorFromModal"],
+    button[onclick*="startRealQRScanner"] {
+      touch-action: manipulation !important;
+      cursor: pointer;
+    }
+
   </style>
 
   <meta name="theme-color" content="#dc2626">
@@ -2399,6 +2409,99 @@ function getMissionMinutes(trupp) {
 
     window.onload = function() {
       updateAlarmzeit();
+
+      // Android Legacy DesignFix V4: Funktionen global bereitstellen
+      window.addTrupp = addTrupp;
+      window.safeDeleteTrupp = safeDeleteTrupp;
+      window.scanAGT = scanAGT;
+      window.startRealQRScanner = startRealQRScanner;
+      window.closeQRModal = closeQRModal;
+      window.openFloorModal = openFloorModal;
+      window.closeFloorModal = closeFloorModal;
+      window.addFloorFromModal = addFloorFromModal;
+      window.removeFloor = removeFloor;
+      window.showTab = showTab;
+      window.openPressureModal = openPressureModal;
+      window.savePressure = savePressure;
+      window.closeModal = closeModal;
+      window.pauseOrResumeEinsatz = pauseOrResumeEinsatz;
+      window.endEinsatz = endEinsatz;
+      window.safeExportPDF = safeExportPDF;
+
+      if (!window.__androidTapFixV4) {
+        window.__androidTapFixV4 = true;
+
+        document.addEventListener('touchend', function(event) {
+          var el = event.target;
+
+          while (el && el !== document) {
+            if (el.getAttribute && el.getAttribute('onclick')) break;
+            el = el.parentNode;
+          }
+
+          if (!el || !el.getAttribute) return;
+
+          var code = el.getAttribute('onclick') || '';
+
+          // Nur gezielt Buttons fixen, die auf Huawei nicht auslösen.
+          // addTrupp wird bewusst NICHT hier ausgeführt, damit keine Doppel-Trupps entstehen.
+          if (
+            code.indexOf('scanAGT') === -1 &&
+            code.indexOf('openFloorModal') === -1 &&
+            code.indexOf('addFloorFromModal') === -1 &&
+            code.indexOf('closeFloorModal') === -1 &&
+            code.indexOf('startRealQRScanner') === -1 &&
+            code.indexOf('closeQRModal') === -1
+          ) {
+            return;
+          }
+
+          var now = Date.now();
+          if (el.__lastTapFix && now - el.__lastTapFix < 700) return;
+          el.__lastTapFix = now;
+
+          event.preventDefault();
+          event.stopPropagation();
+
+          try {
+            if (code.indexOf('scanAGT') !== -1) {
+              var idMatch = code.match(/scanAGT\('([^']+)'\)/);
+              if (idMatch) scanAGT(idMatch[1]);
+              return;
+            }
+
+            if (code.indexOf('openFloorModal') !== -1) {
+              openFloorModal();
+              return;
+            }
+
+            if (code.indexOf('addFloorFromModal') !== -1) {
+              addFloorFromModal();
+              return;
+            }
+
+            if (code.indexOf('closeFloorModal') !== -1) {
+              closeFloorModal();
+              return;
+            }
+
+            if (code.indexOf('startRealQRScanner') !== -1) {
+              startRealQRScanner();
+              return;
+            }
+
+            if (code.indexOf('closeQRModal') !== -1) {
+              closeQRModal();
+              return;
+            }
+          } catch (err) {
+            console.error('Android TapFix V4 Fehler:', err);
+            alert('Aktion konnte nicht ausgeführt werden: ' + (err && err.message ? err.message : err));
+          }
+        }, false);
+      }
+
+
       document.getElementById('einsatz-nr').value = generateEinsatzNummer();
       initDemoData();
       renderAll();
@@ -2414,7 +2517,7 @@ function getMissionMinutes(trupp) {
         }, 1000);
       }
       
-      console.log("%cTruppControl Android Legacy DesignFix V3 gestartet! ✅", "color: #ef4444; font-size: 16px");
+      console.log("%cTruppControl Android Legacy DesignFix V4 gestartet! ✅", "color: #ef4444; font-size: 16px");
       console.log('TruppControl Funktionen geprüft:', {
         handleEndEinsatz: typeof handleEndEinsatz,
         endEinsatz: typeof endEinsatz,
@@ -2427,7 +2530,7 @@ function getMissionMinutes(trupp) {
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./service-worker.js')
-          .then(() => console.log('TruppControl Android Legacy DesignFix V3 Service Worker aktiv'))
+          .then(() => console.log('TruppControl Android Legacy DesignFix V4 Service Worker aktiv'))
           .catch(err => console.warn('Service Worker Fehler:', err));
       });
     }

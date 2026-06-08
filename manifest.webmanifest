@@ -1,8 +1,8 @@
 {
   "name": "TruppControl Android",
   "short_name": "TruppControl",
-  "description": "Android LegacyJS DesignFix V3 ohne doppelten Touch-Fallback.",
-  "start_url": "./index.html?v=android-legacy-design-v3",
+  "description": "Android LegacyJS DesignFix V4 mit gezieltem AGT/Gebäude Tap-Fix.",
+  "start_url": "./index.html?v=android-legacy-design-v4",
   "scope": "./",
   "display": "standalone",
   "background_color": "#09090b",
