@@ -1,8 +1,8 @@
 {
-  "name": "TruppControl Android",
+  "name": "TruppControl",
   "short_name": "TruppControl",
-  "description": "TruppControl Android-optimierte Version.",
-  "start_url": "./index.html?v=android-v1",
+  "description": "OfflineCSS Version ohne Tailwind CDN.",
+  "start_url": "./index.html?v=offline-css-v1",
   "scope": "./",
   "display": "standalone",
   "background_color": "#09090b",
