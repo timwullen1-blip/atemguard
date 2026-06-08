@@ -2,7 +2,7 @@
   "name": "TruppControl",
   "short_name": "TruppControl",
   "description": "Digitale Trupp- und Atemschutzüberwachung mit lokaler AGT-Datenbank.",
-  "start_url": "./index.html?v=agt-db-v1",
+  "start_url": "./index.html?v=stable-agt-db",
   "scope": "./",
   "display": "standalone",
   "background_color": "#09090b",
