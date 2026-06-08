@@ -1,19 +1,16 @@
-# AtemGuard Tablet Stable V2
+# AtemGuard Tablet Stable V5 No Demo
 
-Diese Version basiert direkt auf der funktionierenden Hauptversion und ändert nur die Tablet-Bedienung.
+Diese Version entfernt alle Demo-Startdaten.
 
-## Wichtig
-- Trupp hinzufügen im Atemschutz-Tab und Trupps-Tab
-- Trupp löschen direkt auf den Karten
-- Sicherheitsabfrage beim Löschen
-- QR-Scan bleibt erhalten
-- Service Worker Cache-Version wurde erhöht
+## Neu
+- App startet ohne vorangelegte Trupps
+- keine Demo-AGT-Liste
+- keine Demo-Protokolle
+- leerer Startzustand mit Hinweis "Keine Trupps aktiv"
+- Einsatznummer wird automatisch generiert
+- echter QR-Scan bleibt erhalten
+- PDF-Fix bleibt erhalten
 
 ## Nach Upload
-Auf dem Tablet diese URL öffnen:
-https://timwullen1-blip.github.io/atemguard/?v=stable-v2
-
-Falls die alte Version angezeigt wird:
-1. installierte AtemGuard-App vom Homescreen löschen
-2. Browser-Tab schließen
-3. URL mit ?v=stable-v2 neu öffnen
+Auf dem Tablet öffnen:
+https://timwullen1-blip.github.io/atemguard/?v=stable-v5-nodemo

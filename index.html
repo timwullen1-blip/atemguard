@@ -275,7 +275,7 @@
           ⏹ Einsatz beenden
         </button>
         
-        <button onclick="exportPDF()" 
+        <button onclick="safeExportPDF()" 
                 class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 px-6 py-3 rounded-2xl font-semibold transition-colors">
           <i class="fas fa-file-pdf"></i>
           <span>PDF Protokoll</span>
@@ -485,6 +485,25 @@
     </div>
   </div>
 
+
+  <!-- Modal für Tablet PDF Export -->
+  <div id="pdf-export-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[80]">
+    <div class="bg-zinc-900 rounded-3xl p-8 max-w-md w-full mx-4 text-center">
+      <h3 class="text-2xl font-bold mb-3">PDF-Protokoll erstellt</h3>
+      <p class="text-zinc-400 mb-6">
+        Auf dem Tablet öffnet sich das Protokoll in einem neuen Fenster oder kann über den Button geöffnet werden.
+      </p>
+      <a id="pdf-open-link" href="#" target="_blank"
+         class="block bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl font-bold mb-3">
+        📄 PDF öffnen
+      </a>
+      <button onclick="closePDFExportModal()"
+              class="w-full bg-zinc-800 hover:bg-zinc-700 py-4 rounded-2xl font-semibold">
+        Schließen
+      </button>
+    </div>
+  </div>
+
   <script>
     // ==================== GLOBALE VARIABLEN ====================
     let trupps = [];
@@ -553,6 +572,17 @@
         type: type,
         text: text
       });
+    }
+
+
+    function generateEinsatzNummer() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hour = String(now.getHours()).padStart(2, '0');
+      const minute = String(now.getMinutes()).padStart(2, '0');
+      return `FW-${year}${month}${day}-${hour}${minute}`;
     }
 
     function updateAlarmzeit() {
@@ -795,27 +825,18 @@ function getMissionMinutes(trupp) {
     // ==================== TRUPP MANAGEMENT ====================
     let currentScanTruppId = null;
 
-    // Demo-AGTs für QR-Scan Simulation
-    const demoAGTs = [
-      { name: "Max Mustermann", einheit: "LE 12" },
-      { name: "Susanne Mustermann", einheit: "LE 12" },
-      { name: "Thomas Berger", einheit: "LE 13" },
-      { name: "Lisa Hoffmann", einheit: "LE 12" },
-      { name: "Michael Weber", einheit: "LE 14" },
-      { name: "Anna Schmidt", einheit: "LE 13" }
-    ];
 
     function createTrupp(name = "Trupp " + (trupps.length + 1)) {
       return {
         id: generateId(),
         name: name,
-        fuehrer: "TF " + (trupps.length + 1),
-        mann: "TM",
-        fahrzeug: "LF 16",
-        funk: "Florian 42-" + (10 + trupps.length),
+        fuehrer: "",
+        mann: "",
+        fahrzeug: "",
+        funk: "Funk " + (trupps.length + 1),
         createdAt: Date.now(),
         eintritt: formatTime(),
-        druck: 280,
+        druck: 300,
         lastUpdate: Date.now(),
         floor: null,
         color: 'green',
@@ -886,14 +907,11 @@ function getMissionMinutes(trupp) {
         qrModal.innerHTML = `
           <div class="bg-zinc-900 rounded-3xl p-8 max-w-2xl w-full mx-4">
             <h3 class="text-2xl font-bold mb-2">AGT scannen</h3>
-            <p class="text-zinc-400 mb-6">Scanne einen QR-Code oder nutze die Demo-Auswahl.</p>
+            <p class="text-zinc-400 mb-6">Scanne den QR-Code des Atemschutzgeräteträgers.</p>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
-              <button onclick="startRealQRScanner()" class="bg-red-600 hover:bg-red-700 px-5 py-4 rounded-2xl font-semibold">
+            <div class="mb-6">
+              <button onclick="startRealQRScanner()" class="w-full bg-red-600 hover:bg-red-700 px-5 py-5 rounded-2xl font-bold text-xl">
                 📷 Kamera-Scan starten
-              </button>
-              <button onclick="showDemoAGTList()" class="bg-zinc-800 hover:bg-zinc-700 px-5 py-4 rounded-2xl font-semibold">
-                Demo-AGT auswählen
               </button>
             </div>
 
@@ -914,30 +932,6 @@ function getMissionMinutes(trupp) {
     }
 
     let qrScannerInstance = null;
-
-    function showDemoAGTList() {
-      const listContainer = document.getElementById('qr-agt-list');
-      const reader = document.getElementById('qr-reader');
-      if (reader) reader.classList.add('hidden');
-      if (!listContainer) return;
-
-      listContainer.innerHTML = '';
-      listContainer.classList.remove('hidden');
-
-      demoAGTs.forEach((agt, index) => {
-        const btn = document.createElement('button');
-        btn.className = 'w-full text-left bg-zinc-800 hover:bg-zinc-700 px-5 py-4 rounded-2xl flex justify-between items-center';
-        btn.innerHTML = `
-          <div>
-            <div class="font-semibold">${agt.name}</div>
-            <div class="text-sm text-zinc-400">${agt.einheit}</div>
-          </div>
-          <div class="text-emerald-400">📱 Demo</div>
-        `;
-        btn.onclick = () => selectAGT(index);
-        listContainer.appendChild(btn);
-      });
-    }
 
     function parseAGTQRCode(rawText) {
       try {
@@ -1025,24 +1019,6 @@ function getMissionMinutes(trupp) {
       }
     }
 
-    function selectAGT(index) {
-      const agt = demoAGTs[index];
-      const trupp = trupps.find(t => t.id === currentScanTruppId);
-      if (!trupp) return;
-
-      trupp.members.push({
-        name: agt.name,
-        einheit: agt.einheit,
-        scannedAt: formatTime()
-      });
-
-      addLogEntry(trupp, 'AGT Scan', `${agt.name} (${agt.einheit}) wurde gescannt`);
-      logTruppChange(trupp, 'AGT hinzugefügt', '-', `${agt.name} (${agt.einheit})`);
-
-      closeQRModal();
-      renderAll();
-    }
-
     async function closeQRModal() {
       if (typeof qrScannerInstance !== 'undefined' && qrScannerInstance) {
         await qrScannerInstance.stop().catch(() => {});
@@ -1102,10 +1078,30 @@ function getMissionMinutes(trupp) {
       }
     }
 
+
+    function renderEmptyState(container, message, buttonText = null, buttonAction = null) {
+      if (!container || trupps.length > 0) return false;
+
+      container.innerHTML = `
+        <div class="col-span-full bg-zinc-900 border border-dashed border-zinc-700 rounded-3xl p-10 text-center">
+          <div class="text-5xl mb-4">🛡️</div>
+          <div class="text-2xl font-bold mb-2">${message}</div>
+          <div class="text-zinc-400 mb-6">Lege den ersten Trupp an, sobald die Atemschutzüberwachung beginnt.</div>
+          ${buttonText && buttonAction ? `
+            <button onclick="${buttonAction}" class="bg-red-600 hover:bg-red-700 px-8 py-4 rounded-2xl font-bold">
+              ${buttonText}
+            </button>
+          ` : ''}
+        </div>
+      `;
+      return true;
+    }
+
     // ==================== RENDERING ====================
     function renderTruppList() {
       const container = document.getElementById('trupp-list');
       container.innerHTML = '';
+      if (renderEmptyState(container, 'Noch keine Trupps angelegt', '➕ Ersten Trupp hinzufügen', 'addTrupp()')) return;
       
       trupps.forEach(trupp => {
         const minutes = Math.floor((Date.now() - trupp.lastUpdate) / 60000);
@@ -1201,6 +1197,7 @@ function getMissionMinutes(trupp) {
     function renderAtemschutz() {
       const container = document.getElementById('atemschutz-container');
       container.innerHTML = '';
+      if (renderEmptyState(container, 'Keine aktive Atemschutzüberwachung', '➕ Trupp hinzufügen', 'addTrupp()')) return;
       
       trupps.forEach(trupp => {
         const minutesSinceUpdate = (Date.now() - trupp.lastUpdate) / 60000;
@@ -1274,6 +1271,16 @@ function getMissionMinutes(trupp) {
     function renderDashboardTrupps() {
       const container = document.getElementById('dashboard-trupps');
       container.innerHTML = '';
+      if (trupps.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full bg-zinc-800 rounded-3xl p-8 text-center">
+            <div class="text-3xl mb-3">🛡️</div>
+            <div class="text-xl font-bold">Keine aktiven Trupps</div>
+            <div class="text-zinc-400 mt-1">Trupps werden erst nach Anlage angezeigt.</div>
+          </div>
+        `;
+        return;
+      }
       
       trupps.slice(0, 4).forEach(trupp => {
         const div = document.createElement('div');
@@ -1496,6 +1503,13 @@ function getMissionMinutes(trupp) {
       let overdueCount = 0;
       let maydayCount = 0;
 
+      if (trupps.length === 0) {
+        warningBar.className = 'mb-6 rounded-3xl px-8 py-5 text-xl font-bold flex items-center justify-between bg-zinc-700 text-white';
+        warningText.textContent = '⚪ Keine Trupps aktiv';
+        warningCount.textContent = 'Status: BEREIT';
+        return;
+      }
+
       trupps.forEach(trupp => {
         const minutesSinceUpdate = (Date.now() - trupp.lastUpdate) / 60000;
 
@@ -1563,6 +1577,17 @@ function getMissionMinutes(trupp) {
     function updateQuickSelect() {
       const select = document.getElementById('quick-trupp-select');
       select.innerHTML = '';
+
+      if (trupps.length === 0) {
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = 'Keine Trupps vorhanden';
+        select.appendChild(opt);
+        select.disabled = true;
+        return;
+      }
+
+      select.disabled = false;
       trupps.forEach(trupp => {
         const opt = document.createElement('option');
         opt.value = trupp.id;
@@ -1765,6 +1790,56 @@ function getMissionMinutes(trupp) {
       }
     }
 
+
+    function isTabletOrMobileDevice() {
+      return /iPad|iPhone|Android|Mobile|Tablet/i.test(navigator.userAgent) || window.innerWidth <= 1180;
+    }
+
+    function closePDFExportModal() {
+      const modal = document.getElementById('pdf-export-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function openPDFResult(doc, filename) {
+      const blob = doc.output('blob');
+      const url = URL.createObjectURL(blob);
+
+      const link = document.getElementById('pdf-open-link');
+      const modal = document.getElementById('pdf-export-modal');
+
+      if (link) {
+        link.href = url;
+        link.download = filename;
+      }
+
+      if (isTabletOrMobileDevice()) {
+        const opened = window.open(url, '_blank');
+
+        if (modal) {
+          modal.classList.remove('hidden');
+        }
+
+        if (!opened) {
+          console.warn('Popup wurde blockiert. PDF-Link im Modal nutzen.');
+        }
+      } else {
+        doc.save(filename);
+      }
+    }
+
+    function safeExportPDF() {
+      try {
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+          alert('PDF-Bibliothek wurde noch nicht geladen. Bitte Internetverbindung prüfen und Seite neu laden.');
+          return;
+        }
+        exportPDF();
+      } catch (error) {
+        console.error('PDF Export Fehler:', error);
+        alert('PDF konnte nicht erstellt werden. Bitte Seite neu laden oder Konsole prüfen.');
+      }
+    }
+
     function exportPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -1816,6 +1891,10 @@ function getMissionMinutes(trupp) {
       y += 10;
 
       addSectionTitle("1. Aktuelle Lageübersicht");
+
+      if (trupps.length === 0) {
+        addWrappedText("Keine Trupps angelegt / keine aktive Atemschutzüberwachung.", 25, 175, 4.2);
+      }
 
       trupps.forEach((trupp) => {
         checkPageSpace(8);
@@ -1877,8 +1956,7 @@ function getMissionMinutes(trupp) {
         });
       }
 
-      doc.save(`Einsatzprotokoll_${document.getElementById('einsatz-nr').value}.pdf`);
-      alert("PDF wurde mit vollständigem Zeitstempel-Protokoll heruntergeladen!");
+      openPDFResult(doc, `Einsatzprotokoll_${document.getElementById('einsatz-nr').value}.pdf`);
     }
 
 
@@ -1903,37 +1981,23 @@ function getMissionMinutes(trupp) {
 
     // ==================== INITIALISIERUNG ====================
     function initDemoData() {
-      trupps = [
-        createTrupp("Angriffstrupp 1"),
-        createTrupp("Sicherungstrupp"),
-        createTrupp("Atemschutztrupp 2")
-      ];
-      
-      // Ein paar auf andere Etagen verteilen
-      trupps[0].floor = 'keller';
-      trupps[1].floor = 'og1';
-      trupps[2].druck = 95;
-      checkPressureStatus(trupps[2]);
+      // Produktivstart: keine Demo-Trupps, keine Beispiel-AGTs.
+      // Der Einsatz beginnt mit leerer Lage und wird über "Trupp hinzufügen" aufgebaut.
+      trupps = [];
 
-      // Demo Mitglieder
-      trupps[0].members = [
-        { name: "Max Mustermann", einheit: "LE 12", scannedAt: "17:30" },
-        { name: "Susanne Mustermann", einheit: "LE 12", scannedAt: "17:31" }
-      ];
-
-      trupps.forEach(trupp => {
-        addLogEntry(trupp, 'Initialisierung', `${trupp.name} angelegt mit ${trupp.druck} bar`);
-      });
-
-      addEinsatzLogEntry('Einsatzstatus', 'Einsatz gestartet / aktiv');
-      addEinsatzLogEntry('Einsatz gestartet', 'Demo-Einsatzdaten wurden geladen');
-      addEinsatzLogEntry('Einsatzart', `Einsatzart: ${getEinsatzArt()}`);
+      if (typeof addEinsatzLogEntry === 'function') {
+        addEinsatzLogEntry('Einsatzstatus', 'Einsatz bereit / keine Trupps angelegt');
+        if (typeof getEinsatzArt === 'function') {
+          addEinsatzLogEntry('Einsatzart', `Einsatzart: ${getEinsatzArt()}`);
+        }
+      }
     }
 
     // Kein automatischer Druckabfall mehr
 
     window.onload = function() {
       updateAlarmzeit();
+      document.getElementById('einsatz-nr').value = generateEinsatzNummer();
       initDemoData();
       renderAll();
       showTab(window.innerWidth <= 1180 ? 2 : 0);
@@ -1956,6 +2020,25 @@ function getMissionMinutes(trupp) {
       });
     };
   </script>
+
+
+  <!-- Modal für Tablet PDF Export -->
+  <div id="pdf-export-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[80]">
+    <div class="bg-zinc-900 rounded-3xl p-8 max-w-md w-full mx-4 text-center">
+      <h3 class="text-2xl font-bold mb-3">PDF-Protokoll erstellt</h3>
+      <p class="text-zinc-400 mb-6">
+        Auf dem Tablet öffnet sich das Protokoll in einem neuen Fenster oder kann über den Button geöffnet werden.
+      </p>
+      <a id="pdf-open-link" href="#" target="_blank"
+         class="block bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl font-bold mb-3">
+        📄 PDF öffnen
+      </a>
+      <button onclick="closePDFExportModal()"
+              class="w-full bg-zinc-800 hover:bg-zinc-700 py-4 rounded-2xl font-semibold">
+        Schließen
+      </button>
+    </div>
+  </div>
 
   <script>
     if ('serviceWorker' in navigator) {

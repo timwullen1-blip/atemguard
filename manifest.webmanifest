@@ -1,8 +1,8 @@
 {
-  "name": "AtemGuard Tablet Stable V2",
+  "name": "AtemGuard Tablet Stable V5",
   "short_name": "AtemGuard",
-  "description": "Stabile Tablet-Version mit QR-Scan, Trupp hinzufügen und Trupp löschen.",
-  "start_url": "./index.html?v=stable-v2",
+  "description": "Produktivversion ohne Demo-Daten mit echtem QR-Scan.",
+  "start_url": "./index.html?v=stable-v5-nodemo",
   "scope": "./",
   "display": "standalone",
   "background_color": "#09090b",
