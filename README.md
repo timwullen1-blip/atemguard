@@ -1,16 +1,7 @@
-# AtemGuard Tablet Stable V5 No Demo
+# TruppControl PDF CleanText Fix
 
-Diese Version entfernt alle Demo-Startdaten.
+Diese Version behebt den Fehler:
+cleanPDFText is not defined
 
-## Neu
-- App startet ohne vorangelegte Trupps
-- keine Demo-AGT-Liste
-- keine Demo-Protokolle
-- leerer Startzustand mit Hinweis "Keine Trupps aktiv"
-- Einsatznummer wird automatisch generiert
-- echter QR-Scan bleibt erhalten
-- PDF-Fix bleibt erhalten
-
-## Nach Upload
-Auf dem Tablet öffnen:
-https://timwullen1-blip.github.io/atemguard/?v=stable-v5-nodemo
+## Nach Upload öffnen
+https://timwullen1-blip.github.io/atemguard/?v=pdf-cleantext-fix

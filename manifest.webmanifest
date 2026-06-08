@@ -1,8 +1,8 @@
 {
-  "name": "AtemGuard Tablet Stable V5",
-  "short_name": "AtemGuard",
-  "description": "Produktivversion ohne Demo-Daten mit echtem QR-Scan.",
-  "start_url": "./index.html?v=stable-v5-nodemo",
+  "name": "TruppControl",
+  "short_name": "TruppControl",
+  "description": "Digitale Trupp- und Atemschutzüberwachung mit QR-Scan und PDF-Protokoll.",
+  "start_url": "./index.html?v=pdf-cleantext-fix",
   "scope": "./",
   "display": "standalone",
   "background_color": "#09090b",
