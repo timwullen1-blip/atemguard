@@ -1,8 +1,8 @@
 {
-  "name": "TruppControl Android",
+  "name": "TruppControl Compact",
   "short_name": "TruppControl",
-  "description": "Android LegacyJS DesignFix V4 mit gezieltem AGT/Gebäude Tap-Fix.",
-  "start_url": "./index.html?v=android-legacy-design-v4",
+  "description": "Kompakte Tablet-Version mit Antippen statt Drag & Drop.",
+  "start_url": "./index.html?v=tablet-compact-move-v1",
   "scope": "./",
   "display": "standalone",
   "background_color": "#09090b",

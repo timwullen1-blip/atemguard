@@ -1,9 +1,13 @@
-# TruppControl Android Legacy DesignFix V4
+# TruppControl Tablet Compact Move V1
 
-Fix:
-- AGT Scan Button gezielt per Touch-Fallback
-- Gebäude hinzufügen gezielt per Touch-Fallback
-- Trupp hinzufügen wird nicht vom Touch-Fallback behandelt, damit keine Doppel-Trupps entstehen
+Geändert:
+- Tablet-Oberfläche kompakter
+- Gebäudeansicht kompakter
+- Drag & Drop ersetzt durch Antippen der Truppkarte
+- Beim Antippen öffnet sich ein Modal zum Verschieben
+- Android/Huawei Legacy-Fixes bleiben enthalten
+- AGT-Datenbank bleibt enthalten
+- PDF-Code bleibt unverändert
 
 Öffnen:
-https://timwullen1-blip.github.io/TruppControl-/?v=android-legacy-design-v4
+https://timwullen1-blip.github.io/TruppControl-/?v=tablet-compact-move-v1

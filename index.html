@@ -519,6 +519,159 @@
       cursor: pointer;
     }
 
+  
+    /* ==================== TABLET COMPACT MOVE V1 ==================== */
+    @media (max-width: 1180px), (hover: none) and (pointer: coarse) {
+      body {
+        font-size: 15px !important;
+      }
+
+      header {
+        padding: 0.65rem !important;
+        gap: 0.65rem !important;
+      }
+
+      header h1 {
+        font-size: 1.85rem !important;
+        line-height: 1.05 !important;
+      }
+
+      header p {
+        font-size: 0.78rem !important;
+      }
+
+      header .w-12,
+      header .h-12 {
+        width: 2.4rem !important;
+        height: 2.4rem !important;
+        font-size: 1.5rem !important;
+      }
+
+      header > div:last-child {
+        gap: 0.55rem !important;
+      }
+
+      header button,
+      header select,
+      header input,
+      #einsatz-status-display {
+        min-height: 42px !important;
+        font-size: 0.9rem !important;
+        padding-top: 0.45rem !important;
+        padding-bottom: 0.45rem !important;
+      }
+
+      #einsatz-nr {
+        font-size: 0.95rem !important;
+        width: 8.8rem !important;
+      }
+
+      #alarmzeit {
+        font-size: 1rem !important;
+      }
+
+      .tablet-tabbar {
+        padding: 0.45rem !important;
+        gap: 0.45rem !important;
+      }
+
+      .tablet-tabbar button {
+        min-height: 45px !important;
+        min-width: 132px !important;
+        font-size: 0.92rem !important;
+        border-radius: 0.75rem !important;
+      }
+
+      .p-8 {
+        padding: 0.75rem !important;
+      }
+
+      .rounded-3xl {
+        border-radius: 1rem !important;
+      }
+
+      .rounded-2xl {
+        border-radius: 0.75rem !important;
+      }
+
+      .text-3xl {
+        font-size: 1.35rem !important;
+        line-height: 1.75rem !important;
+      }
+
+      .text-2xl {
+        font-size: 1.2rem !important;
+        line-height: 1.55rem !important;
+      }
+
+      .text-xl {
+        font-size: 1rem !important;
+        line-height: 1.35rem !important;
+      }
+
+      .text-6xl {
+        font-size: 2.5rem !important;
+      }
+
+      .mb-8 {
+        margin-bottom: 1rem !important;
+      }
+
+      .mb-6 {
+        margin-bottom: 0.8rem !important;
+      }
+
+      .mt-8 {
+        margin-top: 1rem !important;
+      }
+
+      .mt-12 {
+        margin-top: 1.5rem !important;
+      }
+
+      .gap-6 {
+        gap: 0.8rem !important;
+      }
+
+      .gap-4 {
+        gap: 0.6rem !important;
+      }
+
+      .trupp-card,
+      #atemschutz-container > div,
+      #dashboard-trupps > div,
+      #building-floors > div {
+        min-height: 110px !important;
+        padding: 0.85rem !important;
+      }
+
+      .tablet-delete-btn {
+        min-width: 42px !important;
+        min-height: 42px !important;
+        font-size: 0.95rem !important;
+      }
+
+      .building-compact-card {
+        min-height: auto !important;
+        padding: 0.7rem !important;
+        cursor: pointer;
+      }
+
+      .building-compact-card:active {
+        transform: scale(0.98);
+      }
+
+      .building-floor-box {
+        min-height: 125px !important;
+      }
+
+      button,
+      input,
+      select {
+        min-height: 42px !important;
+      }
+    }
+
   </style>
 
   <meta name="theme-color" content="#dc2626">
@@ -809,6 +962,20 @@
       </button>
     </div>
   </div>
+
+
+  <!-- Modal für Trupp verschieben -->
+  <div id="move-trupp-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[80]">
+    <div class="bg-zinc-900 rounded-3xl p-6 max-w-md w-full mx-4">
+      <h3 class="text-2xl font-bold mb-2">Trupp verschieben</h3>
+      <p id="move-trupp-name" class="text-zinc-400 mb-4">Zielbereich auswählen</p>
+      <div id="move-floor-list" class="grid grid-cols-1 gap-3 mb-4"></div>
+      <button onclick="closeMoveTruppModal()" class="w-full bg-zinc-800 hover:bg-zinc-700 py-3 rounded-2xl font-semibold">
+        Abbrechen
+      </button>
+    </div>
+  </div>
+
 
   <script>
     // ==================== GLOBALE VARIABLEN ====================
@@ -1130,6 +1297,7 @@ function getMissionMinutes(trupp) {
 
     // ==================== TRUPP MANAGEMENT ====================
     let currentScanTruppId = null;
+    let currentMoveTruppId = null;
 
 
     function createTrupp(name = "Trupp " + (trupps.length + 1)) {
@@ -1761,18 +1929,15 @@ function getMissionMinutes(trupp) {
 
       buildingContainer.innerHTML = '';
 
-      floors.forEach(floor => {
+      floors.forEach(function(floor) {
         const floorDiv = document.createElement('div');
-        floorDiv.onclick = dropOnFloor;
-        floorDiv.ondrop = drop;
-        floorDiv.ondragover = allowDrop;
         floorDiv.id = `floor-${floor.id}`;
-        floorDiv.className = 'floor bg-zinc-900 border-2 border-dashed border-zinc-700 hover:border-green-500 rounded-3xl p-6 min-h-[180px]';
+        floorDiv.className = 'floor building-floor-box bg-zinc-900 border-2 border-dashed border-zinc-700 hover:border-green-500 rounded-3xl p-4 min-h-[180px]';
 
         const canDelete = floor.id !== 'eg';
 
         floorDiv.innerHTML = `
-          <div class="flex items-center justify-between gap-2 mb-4">
+          <div class="flex items-center justify-between gap-2 mb-3">
             <div class="font-semibold text-lg">${floor.name}</div>
             ${canDelete ? `
               <button onclick="removeFloor(event, '${floor.id}')" class="text-zinc-500 hover:text-red-400" title="Stockwerk löschen">
@@ -1786,10 +1951,10 @@ function getMissionMinutes(trupp) {
         buildingContainer.appendChild(floorDiv);
       });
 
-      trupps.forEach(trupp => {
+      trupps.forEach(function(trupp) {
         let floorId = trupp.floor || 'eg';
 
-        if (!floors.some(floor => floor.id === floorId)) {
+        if (!floors.some(function(floor) { return floor.id === floorId; })) {
           floorId = 'eg';
           trupp.floor = 'eg';
         }
@@ -1798,12 +1963,16 @@ function getMissionMinutes(trupp) {
         if (!content) return;
 
         const el = document.createElement('div');
-        el.draggable = true;
-        el.ondragstart = (e) => e.dataTransfer.setData("text", trupp.id);
-        el.className = `trupp-card bg-zinc-800 rounded-2xl p-4 cursor-move border-l-4 ${trupp.maydayActive ? 'border-red-500 alarm-active' : trupp.color === 'red' ? 'border-red-500' : 'border-emerald-500'}`;
+        el.onclick = function() { openMoveTruppModal(trupp.id); };
+        el.className = `building-compact-card trupp-card bg-zinc-800 rounded-2xl p-3 border-l-4 ${trupp.maydayActive ? 'border-red-500 alarm-active' : trupp.color === 'red' ? 'border-red-500' : 'border-emerald-500'}`;
         el.innerHTML = `
-          <div class="font-medium">${trupp.maydayActive ? '🚨 ' : ''}${trupp.name}</div>
-          <div class="text-xs text-zinc-400">${trupp.funk} • ${trupp.druck} bar</div>
+          <div class="flex justify-between items-start gap-2">
+            <div>
+              <div class="font-bold">${trupp.maydayActive ? '🚨 ' : ''}${trupp.name}</div>
+              <div class="text-xs text-zinc-400">${trupp.funk || ''} · ${trupp.druck} bar</div>
+            </div>
+            <div class="text-xs text-zinc-400">📍</div>
+          </div>
           <div class="mt-2 grid grid-cols-2 gap-2 text-xs">
             <div class="bg-zinc-900 rounded-xl px-2 py-1">
               <div class="text-zinc-500">Innen</div>
@@ -1817,6 +1986,62 @@ function getMissionMinutes(trupp) {
         `;
         content.appendChild(el);
       });
+    }
+
+
+    function openMoveTruppModal(truppId) {
+      currentMoveTruppId = truppId;
+      const trupp = trupps.find(function(t) { return t.id === truppId; });
+      const modal = document.getElementById('move-trupp-modal');
+      const list = document.getElementById('move-floor-list');
+      const title = document.getElementById('move-trupp-name');
+
+      if (!trupp || !modal || !list) return;
+
+      if (title) title.textContent = `${trupp.name} verschieben nach:`;
+
+      list.innerHTML = '';
+      sortFloors();
+
+      floors.forEach(function(floor) {
+        const btn = document.createElement('button');
+        const active = (trupp.floor || 'eg') === floor.id;
+        btn.className = active
+          ? 'w-full bg-red-600 hover:bg-red-700 py-3 rounded-2xl font-bold text-white'
+          : 'w-full bg-zinc-800 hover:bg-zinc-700 py-3 rounded-2xl font-semibold text-white';
+        btn.textContent = `${active ? '✓ ' : '📍 '}${floor.name}`;
+        btn.onclick = function() {
+          moveTruppToFloor(floor.id);
+        };
+        list.appendChild(btn);
+      });
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeMoveTruppModal() {
+      const modal = document.getElementById('move-trupp-modal');
+      if (modal) modal.classList.add('hidden');
+      currentMoveTruppId = null;
+    }
+
+    function moveTruppToFloor(floorId) {
+      if (!currentMoveTruppId) return;
+
+      const trupp = trupps.find(function(t) { return t.id === currentMoveTruppId; });
+      const floor = floors.find(function(f) { return f.id === floorId; });
+
+      if (!trupp || !floor) return;
+
+      const oldFloorName = getFloorName(trupp.floor || 'eg');
+      trupp.floor = floorId;
+
+      if (typeof addLogEntry === 'function') {
+        addLogEntry(trupp, 'Standort geändert', `${oldFloorName} -> ${floor.name}`);
+      }
+
+      closeMoveTruppModal();
+      renderAll();
     }
 
     function removeFloor(event, floorId) {
@@ -2420,6 +2645,9 @@ function getMissionMinutes(trupp) {
       window.closeFloorModal = closeFloorModal;
       window.addFloorFromModal = addFloorFromModal;
       window.removeFloor = removeFloor;
+      window.openMoveTruppModal = openMoveTruppModal;
+      window.closeMoveTruppModal = closeMoveTruppModal;
+      window.moveTruppToFloor = moveTruppToFloor;
       window.showTab = showTab;
       window.openPressureModal = openPressureModal;
       window.savePressure = savePressure;
@@ -2517,7 +2745,7 @@ function getMissionMinutes(trupp) {
         }, 1000);
       }
       
-      console.log("%cTruppControl Android Legacy DesignFix V4 gestartet! ✅", "color: #ef4444; font-size: 16px");
+      console.log("%cTruppControl Tablet Compact Move V1 gestartet! ✅", "color: #ef4444; font-size: 16px");
       console.log('TruppControl Funktionen geprüft:', {
         handleEndEinsatz: typeof handleEndEinsatz,
         endEinsatz: typeof endEinsatz,
@@ -2530,7 +2758,7 @@ function getMissionMinutes(trupp) {
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./service-worker.js')
-          .then(() => console.log('TruppControl Android Legacy DesignFix V4 Service Worker aktiv'))
+          .then(() => console.log('TruppControl Tablet Compact Move V1 Service Worker aktiv'))
           .catch(err => console.warn('Service Worker Fehler:', err));
       });
     }
