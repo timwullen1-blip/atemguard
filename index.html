@@ -213,34 +213,7 @@
       }
     }
 
-  
-/* ANDROID FALLBACK CSS SAFE - nur Optik, kein JS */
-body{background:#09090b!important;color:#f4f4f5!important;font-family:Inter,system-ui,sans-serif}
-.hidden{display:none!important}.flex{display:flex}.grid{display:grid}.items-center{align-items:center}.items-start{align-items:flex-start}.justify-between{justify-content:space-between}.justify-center{justify-content:center}.text-center{text-align:center}.text-right{text-align:right}.flex-1{flex:1}
-.bg-zinc-950{background:#09090b}.bg-zinc-900{background:#18181b}.bg-zinc-800{background:#27272a}.bg-zinc-700{background:#3f3f46}.bg-red-600{background:#dc2626}.bg-red-700{background:#b91c1c}.bg-emerald-600{background:#059669}.bg-yellow-500{background:#eab308}.bg-black\/80{background:rgba(0,0,0,.8)}
-.text-zinc-100{color:#f4f4f5}.text-zinc-400{color:#a1a1aa}.text-zinc-500{color:#71717a}.text-red-500{color:#ef4444}.text-emerald-400{color:#34d399}.text-yellow-400{color:#facc15}.text-white{color:white}.text-black{color:black}
-.rounded-xl{border-radius:.75rem}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}
-.gap-2{gap:.5rem}.gap-3{gap:.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-8{gap:2rem}
-.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.p-7{padding:1.75rem}.p-8{padding:2rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-4{padding-top:1rem;padding-bottom:1rem}.py-5{padding-top:1.25rem;padding-bottom:1.25rem}
-.mb-1{margin-bottom:.25rem}.mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mt-3{margin-top:.75rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.mt-8{margin-top:2rem}.mt-12{margin-top:3rem}
-.font-bold{font-weight:700}.font-semibold{font-weight:600}.font-mono{font-family:ui-monospace,Menlo,Consolas,monospace}.text-xs{font-size:.75rem}.text-sm{font-size:.875rem}.text-xl{font-size:1.25rem}.text-2xl{font-size:1.5rem}.text-3xl{font-size:1.875rem}.text-4xl{font-size:2.25rem}.text-6xl{font-size:3.75rem}
-.border{border:1px solid #3f3f46}.border-b{border-bottom:1px solid #27272a}.border-t{border-top:1px solid #3f3f46}.border-zinc-700{border-color:#3f3f46}.border-zinc-800{border-color:#27272a}.border-red-500{border-color:#ef4444}
-button,input,select{font:inherit;min-height:54px;touch-action:manipulation;color:inherit}button{cursor:pointer;border:0}input,select{border:0}.w-full{width:100%}.max-w-screen-2xl{max-width:1536px}.mx-auto{margin-left:auto;margin-right:auto}
-@media (hover:none) and (pointer:coarse){
-  header{position:static!important;padding:1rem!important;flex-direction:column;align-items:stretch!important;gap:1rem}
-  header>div:first-child{justify-content:center}
-  header>div:last-child{display:grid!important;grid-template-columns:1fr 1fr;gap:.75rem!important}
-  header>div:last-child>div:first-child{grid-column:1/-1;flex-wrap:wrap;justify-content:center}
-  .tablet-tabbar,.tablet-action-row{display:flex!important}
-  .sticky.top-20{display:none!important}
-  .p-8{padding:1rem!important}
-  #dashboard-trupps,#trupp-list,#atemschutz-container,#building-floors{grid-template-columns:1fr 1fr!important}
-}
-@media(max-width:760px){
-  header>div:last-child,#dashboard-trupps,#trupp-list,#atemschutz-container,#building-floors{grid-template-columns:1fr!important}
-}
-
-</style>
+  </style>
 
   <meta name="theme-color" content="#dc2626">
   <meta name="mobile-web-app-capable" content="yes">
@@ -920,6 +893,23 @@ function getMissionMinutes(trupp) {
 
 
 
+
+    // ==================== AGT-DATENBANK ====================
+    const agtDatenbank = {
+      "AGT001": "Christian Nußbaum",
+      "AGT002": "Bastian Mänz",
+      "AGT003": "Maik Bassauer",
+      "AGT004": "Steven Bassauer",
+      "AGT005": "Philipp Wullen",
+      "AGT006": "Tim Wullen",
+      "AGT007": "Marie Verspeek",
+      "AGT008": "Sophia Verspeek",
+      "AGT009": "Sarah Mänz",
+      "AGT010": "Andreas Wennmacher",
+      "AGT011": "Mathias Heitzer",
+      "AGT012": "Marvin Lang"
+    };
+
     // ==================== QR-Scan Simulation ====================
     function scanAGT(truppId) {
       currentScanTruppId = truppId;
@@ -961,20 +951,43 @@ function getMissionMinutes(trupp) {
     let qrScannerInstance = null;
 
     function parseAGTQRCode(rawText) {
-      try {
-        const data = JSON.parse(rawText);
+      const qrValue = String(rawText || '').trim();
+
+      if (agtDatenbank[qrValue]) {
         return {
-          name: data.name || data.Name || 'Unbekannter AGT',
-          einheit: data.einheit || data.Einheit || 'Unbekannte Einheit',
-          agtNr: data.agtNr || data.agt_nr || data.nr || '',
+          name: agtDatenbank[qrValue],
+          einheit: '',
+          agtNr: qrValue,
+          funktion: ''
+        };
+      }
+
+      try {
+        const data = JSON.parse(qrValue);
+        const id = data.agtNr || data.agt_nr || data.id || data.nr || '';
+        return {
+          name: data.name || data.Name || agtDatenbank[id] || 'Unbekannter AGT',
+          einheit: data.einheit || data.Einheit || '',
+          agtNr: id,
           funktion: data.funktion || data.Funktion || ''
         };
       } catch (e) {
-        const parts = rawText.split(';').map(p => p.trim());
+        const parts = qrValue.split(';').map(function(p) { return p.trim(); });
+        const id = parts[0] || qrValue;
+
+        if (agtDatenbank[id]) {
+          return {
+            name: agtDatenbank[id],
+            einheit: '',
+            agtNr: id,
+            funktion: ''
+          };
+        }
+
         return {
-          name: parts[0] || rawText,
-          einheit: parts[1] || 'Unbekannte Einheit',
-          agtNr: parts[2] || '',
+          name: parts[0] || qrValue,
+          einheit: parts[1] || '',
+          agtNr: parts[2] || qrValue,
           funktion: parts[3] || ''
         };
       }
@@ -1357,10 +1370,10 @@ function getMissionMinutes(trupp) {
 
     function sortFloors() {
       floors.sort((a, b) => {
-        const levelDiff = (a.level ?? 50) - (b.level ?? 50);
+        const levelDiff = ((a.level == null ? 50 : a.level) - (b.level == null ? 50 : b.level));
         if (levelDiff !== 0) return levelDiff;
 
-        const sideDiff = (a.sideOrder ?? 0) - (b.sideOrder ?? 0);
+        const sideDiff = ((a.sideOrder == null ? 0 : a.sideOrder) - (b.sideOrder == null ? 0 : b.sideOrder));
         if (sideDiff !== 0) return sideDiff;
 
         return a.name.localeCompare(b.name, 'de');
@@ -1375,9 +1388,12 @@ function getMissionMinutes(trupp) {
     }
 
     function updateFloorPreview() {
-      const level = document.getElementById('floor-level-select')?.value ?? 1;
-      const side = document.getElementById('floor-side-select')?.value ?? 'Links';
-      const custom = document.getElementById('custom-floor-name')?.value.trim();
+      const levelEl = document.getElementById('floor-level-select');
+      const level = levelEl ? levelEl.value : 1;
+      const sideEl = document.getElementById('floor-side-select');
+      const side = sideEl ? sideEl.value : 'Links';
+      const customEl = document.getElementById('custom-floor-name');
+      const custom = customEl ? customEl.value.trim() : '';
 
       const preview = document.getElementById('floor-preview');
       if (preview) preview.textContent = custom || buildFloorName(level, side);
@@ -1820,7 +1836,7 @@ function getMissionMinutes(trupp) {
 
 
     function cleanPDFText(value) {
-      return String(value ?? '')
+      return String(value == null ? '' : value)
         .replace(/[🚒🎓💪🔥📚🟢🟡🔴🚨🔇▶⏹✅⚠️🛡️]/g, '')
         .replace(/→/g, '->')
         .replace(/–/g, '-')
@@ -2070,6 +2086,29 @@ function getMissionMinutes(trupp) {
       updateTabletTabs(n);
     }
 
+
+    // ==================== ANDROID LEGACY TOUCH FIX ====================
+    document.addEventListener('touchend', function(event) {
+      var el = event.target;
+      while (el && el !== document && !el.getAttribute('onclick')) {
+        el = el.parentNode;
+      }
+
+      if (el && el.getAttribute && el.getAttribute('onclick')) {
+        // Old Android sometimes does not fire click reliably after touch.
+        // Let normal click run if it does; this is only a fallback.
+        setTimeout(function() {
+          try {
+            if (typeof el.onclick === 'function') {
+              el.onclick.call(el, event);
+            }
+          } catch (e) {
+            console.error('Android Legacy Touch Fehler:', e);
+          }
+        }, 10);
+      }
+    }, false);
+
     // ==================== INITIALISIERUNG ====================
     function initDemoData() {
       // Produktivstart: keine Demo-Trupps, keine Beispiel-AGTs.
@@ -2098,12 +2137,12 @@ function getMissionMinutes(trupp) {
       // Update clock every minute
       setInterval(updateAlarmzeit, 60000);
       if (!renderTimer) {
-        renderTimer = setInterval(() => {
+        renderTimer = setInterval(function() {
           renderAll();
         }, 1000);
       }
       
-      console.log("%cTruppControl Android Fallback SAFE gestartet! ✅", "color: #ef4444; font-size: 16px");
+      console.log("%cTruppControl Android LegacyJS V1 gestartet! ✅", "color: #ef4444; font-size: 16px");
       console.log('TruppControl Funktionen geprüft:', {
         handleEndEinsatz: typeof handleEndEinsatz,
         endEinsatz: typeof endEinsatz,
@@ -2116,7 +2155,7 @@ function getMissionMinutes(trupp) {
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./service-worker.js')
-          .then(() => console.log('TruppControl Android Fallback SAFE Service Worker aktiv'))
+          .then(() => console.log('TruppControl Android LegacyJS V1 Service Worker aktiv'))
           .catch(err => console.warn('Service Worker Fehler:', err));
       });
     }

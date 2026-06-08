@@ -1,5 +1,12 @@
-TruppControl Android Fallback SAFE
+# TruppControl Android LegacyJS V1
 
-Nur CSS-Fallback. JS/PDF unverändert.
+Diese Version ist für alte Android/Huawei-Browser gedacht.
 
-URL: https://timwullen1-blip.github.io/TruppControl-/?v=android-fallback-safe
+Geändert:
+- moderne JS-Syntax `?.` und `??` ersetzt
+- zusätzlicher Touch-Fallback
+- AGT-Datenbank enthalten
+- PDF-Code inhaltlich nicht verändert
+
+Öffnen:
+https://timwullen1-blip.github.io/TruppControl-/?v=android-legacy-js-v1
