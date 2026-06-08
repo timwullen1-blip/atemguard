@@ -1,8 +1,8 @@
 {
-  "name": "TruppControl Android Legacy",
+  "name": "TruppControl Android",
   "short_name": "TruppControl",
-  "description": "Android Legacy JavaScript Version.",
-  "start_url": "./index.html?v=android-legacy-js-v1",
+  "description": "Android LegacyJS mit Offline DesignFix.",
+  "start_url": "./index.html?v=android-legacy-design-v2",
   "scope": "./",
   "display": "standalone",
   "background_color": "#09090b",

@@ -1,12 +1,8 @@
-# TruppControl Android LegacyJS V1
+# TruppControl Android Legacy DesignFix V2
 
-Diese Version ist für alte Android/Huawei-Browser gedacht.
-
-Geändert:
-- moderne JS-Syntax `?.` und `??` ersetzt
-- zusätzlicher Touch-Fallback
-- AGT-Datenbank enthalten
-- PDF-Code inhaltlich nicht verändert
+Kombiniert:
+- LegacyJS V1, bei dem Buttons funktionieren
+- Offline Design-CSS, damit Huawei nicht auf Tailwind-CDN angewiesen ist
 
 Öffnen:
-https://timwullen1-blip.github.io/TruppControl-/?v=android-legacy-js-v1
+https://timwullen1-blip.github.io/TruppControl-/?v=android-legacy-design-v2

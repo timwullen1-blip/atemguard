@@ -1,4 +1,4 @@
-const CACHE_NAME='truppcontrol-android-legacy-js-v1-20260608';
+const CACHE_NAME='truppcontrol-android-legacy-designfix-v2-20260608';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./icon-192.svg','./icon-512.svg'];
 self.addEventListener('install',function(e){e.waitUntil(caches.open(CACHE_NAME).then(function(c){return c.addAll(ASSETS);}));self.skipWaiting();});
 self.addEventListener('activate',function(e){e.waitUntil(caches.keys().then(function(keys){return Promise.all(keys.map(function(k){return k!==CACHE_NAME?caches.delete(k):null;}));}));self.clients.claim();});
