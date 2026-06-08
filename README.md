@@ -1,16 +1,22 @@
-# AtemGuard Tablet Stable V5 No Demo
+# TruppControl Tablet Stable V1
 
-Diese Version entfernt alle Demo-Startdaten.
+TruppControl ist die neue Version von AtemGuard.
 
-## Neu
-- App startet ohne vorangelegte Trupps
-- keine Demo-AGT-Liste
-- keine Demo-Protokolle
-- leerer Startzustand mit Hinweis "Keine Trupps aktiv"
-- Einsatznummer wird automatisch generiert
-- echter QR-Scan bleibt erhalten
-- PDF-Fix bleibt erhalten
+## Fokus
+- Digitale Trupp- & Atemschutzüberwachung
+- echter QR-Scan für AGT
+- leere Einsatzlage beim Start
+- Innenangriff-Uhr
+- Druckmeldungen
+- MAYDAY
+- PDF-Protokoll
+- Einsatzarten
+- Tablet-Optimierung
 
-## Nach Upload
-Auf dem Tablet öffnen:
-https://timwullen1-blip.github.io/atemguard/?v=stable-v5-nodemo
+## Upload
+Alle Dateien aus diesem Ordner auf GitHub hochladen und vorhandene Dateien ersetzen.
+
+## Nach Upload öffnen
+https://timwullen1-blip.github.io/atemguard/?v=truppcontrol-v1
+
+Hinweis: Die GitHub-URL kann gleich bleiben, auch wenn die App jetzt TruppControl heißt.

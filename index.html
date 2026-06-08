@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>AtemGuard - Feuerwehr Einsatz Dashboard</title>
+  <title>TruppControl - Digitale Trupp- & Atemschutzüberwachung</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -219,7 +219,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="AtemGuard">
+  <meta name="apple-mobile-web-app-title" content="TruppControl">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.svg">
 </head>
@@ -228,10 +228,10 @@
     <!-- Header -->
     <header class="bg-zinc-900 border-b border-zinc-800 px-8 py-5 flex items-center justify-between sticky top-0 z-50">
       <div class="flex items-center gap-4">
-        <div class="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center text-3xl">🛡️</div>
+        <div class="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center text-3xl">🚒</div>
         <div>
-          <h1 class="text-4xl font-bold tracking-tight text-red-500">AtemGuard</h1>
-          <p class="text-sm text-zinc-400">Einsatz- & Atemschutzüberwachung</p>
+          <h1 class="text-4xl font-bold tracking-tight text-red-500">TruppControl</h1>
+          <p class="text-sm text-zinc-400">Einsatz- & Trupp- & Atemschutzüberwachung</p>
         </div>
       </div>
       
@@ -321,7 +321,7 @@
               <div id="einsatzart-hinweis" class="bg-zinc-800 rounded-2xl px-5 py-4 border-l-4 border-red-500">
                 <div class="text-zinc-400 text-sm">Aktuelle Einsatzart</div>
                 <div id="einsatzart-hinweis-text" class="text-xl font-bold">🚒 Realeinsatz</div>
-                <div id="einsatzart-hinweis-sub" class="text-sm text-zinc-400 mt-1">Einsatzprotokoll zur Dokumentation der Atemschutzüberwachung.</div>
+                <div id="einsatzart-hinweis-sub" class="text-sm text-zinc-400 mt-1">Einsatzprotokoll zur Dokumentation der Trupp- & Atemschutzüberwachung.</div>
               </div>
 
               <div>
@@ -365,7 +365,7 @@
 
       <!-- TAB 2: Atemschutz -->
       <div id="tab-2" class="tab-content hidden">
-        <h2 class="text-3xl font-bold mb-8">Atemschutzüberwachung</h2>
+        <h2 class="text-3xl font-bold mb-8">Trupp- & Atemschutzüberwachung</h2>
 
         <div class="tablet-action-row">
           <button onclick="addTrupp()" class="bg-red-600 hover:bg-red-700 text-white flex-1">
@@ -430,7 +430,7 @@
   <div id="floor-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
     <div class="bg-zinc-900 rounded-3xl p-8 max-w-2xl w-full mx-4">
       <h3 class="text-2xl font-bold mb-2">Bereich / Stockwerk hinzufügen</h3>
-      <p class="text-zinc-400 mb-6">Wähle ein Stockwerk und die Richtung. AtemGuard sortiert die Bereiche automatisch.</p>
+      <p class="text-zinc-400 mb-6">Wähle ein Stockwerk und die Richtung. TruppControl sortiert die Bereiche automatisch.</p>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>
@@ -1086,7 +1086,7 @@ function getMissionMinutes(trupp) {
         <div class="col-span-full bg-zinc-900 border border-dashed border-zinc-700 rounded-3xl p-10 text-center">
           <div class="text-5xl mb-4">🛡️</div>
           <div class="text-2xl font-bold mb-2">${message}</div>
-          <div class="text-zinc-400 mb-6">Lege den ersten Trupp an, sobald die Atemschutzüberwachung beginnt.</div>
+          <div class="text-zinc-400 mb-6">Lege den ersten Trupp an, sobald die Trupp- & Atemschutzüberwachung beginnt.</div>
           ${buttonText && buttonAction ? `
             <button onclick="${buttonAction}" class="bg-red-600 hover:bg-red-700 px-8 py-4 rounded-2xl font-bold">
               ${buttonText}
@@ -1197,7 +1197,7 @@ function getMissionMinutes(trupp) {
     function renderAtemschutz() {
       const container = document.getElementById('atemschutz-container');
       container.innerHTML = '';
-      if (renderEmptyState(container, 'Keine aktive Atemschutzüberwachung', '➕ Trupp hinzufügen', 'addTrupp()')) return;
+      if (renderEmptyState(container, 'Keine aktive Trupp- & Atemschutzüberwachung', '➕ Trupp hinzufügen', 'addTrupp()')) return;
       
       trupps.forEach(trupp => {
         const minutesSinceUpdate = (Date.now() - trupp.lastUpdate) / 60000;
@@ -1626,12 +1626,12 @@ function getMissionMinutes(trupp) {
     function getEinsatzArtTitle() {
       const art = getEinsatzArt();
 
-      if (art === 'Übung') return 'ÜBUNGSDOKUMENTATION - AtemGuard';
-      if (art === 'Belastungsübung') return 'NACHWEIS BELASTUNGSÜBUNG - AtemGuard';
-      if (art === 'Heißausbildung') return 'NACHWEIS HEISSAUSBILDUNG - AtemGuard';
-      if (art === 'Lehrgang') return 'LEHRGANGSDOKUMENTATION - AtemGuard';
+      if (art === 'Übung') return 'ÜBUNGSDOKUMENTATION - TruppControl';
+      if (art === 'Belastungsübung') return 'NACHWEIS BELASTUNGSÜBUNG - TruppControl';
+      if (art === 'Heißausbildung') return 'NACHWEIS HEISSAUSBILDUNG - TruppControl';
+      if (art === 'Lehrgang') return 'LEHRGANGSDOKUMENTATION - TruppControl';
 
-      return 'EINSATZPROTOKOLL - AtemGuard';
+      return 'EINSATZPROTOKOLL - TruppControl';
     }
 
     function getEinsatzArtDescription() {
@@ -1642,7 +1642,7 @@ function getMissionMinutes(trupp) {
       if (art === 'Heißausbildung') return 'Nachweis einer Heißausbildung / Realbrandausbildung.';
       if (art === 'Lehrgang') return 'Dokumentation im Rahmen eines Lehrgangs oder einer Ausbildung.';
 
-      return 'Einsatzprotokoll zur Dokumentation der Atemschutzüberwachung.';
+      return 'Einsatzprotokoll zur Dokumentation der Trupp- & Atemschutzüberwachung.';
     }
 
     function getEinsatzArtIcon() {
@@ -1893,7 +1893,7 @@ function getMissionMinutes(trupp) {
       addSectionTitle("1. Aktuelle Lageübersicht");
 
       if (trupps.length === 0) {
-        addWrappedText("Keine Trupps angelegt / keine aktive Atemschutzüberwachung.", 25, 175, 4.2);
+        addWrappedText("Keine Trupps angelegt / keine aktive Trupp- & Atemschutzüberwachung.", 25, 175, 4.2);
       }
 
       trupps.forEach((trupp) => {
@@ -2012,8 +2012,8 @@ function getMissionMinutes(trupp) {
         }, 1000);
       }
       
-      console.log("%cAtemGuard Tablet Stable V2 gestartet! ✅", "color: #ef4444; font-size: 16px");
-      console.log('AtemGuard Funktionen geprüft:', {
+      console.log("%cTruppControl gestartet! ✅", "color: #ef4444; font-size: 16px"); font-size: 16px");
+      console.log('TruppControl Funktionen geprüft:', {
         handleEndEinsatz: typeof handleEndEinsatz,
         endEinsatz: typeof endEinsatz,
         exportPDF: typeof exportPDF
@@ -2044,7 +2044,7 @@ function getMissionMinutes(trupp) {
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./service-worker.js')
-          .then(() => console.log('AtemGuard Stable V2 Service Worker aktiv'))
+          .then(() => console.log('TruppControl Stable V2 Service Worker aktiv'))
           .catch(err => console.warn('Service Worker Fehler:', err));
       });
     }

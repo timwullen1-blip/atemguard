@@ -1,4 +1,4 @@
-const CACHE_NAME = 'atemguard-tablet-stable-v5-nodemo-20260607';
+const CACHE_NAME = 'truppcontrol-v1-20260607';
 const ASSETS = [
   './',
   './index.html',
