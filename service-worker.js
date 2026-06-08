@@ -1,4 +1,4 @@
-const CACHE_NAME = 'truppcontrol-functionfix-v3-20260607';
+const CACHE_NAME = 'truppcontrol-cleanfix-v4-20260607';
 const ASSETS = [
   './',
   './index.html',

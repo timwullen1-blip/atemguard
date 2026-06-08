@@ -214,50 +214,108 @@
     }
 
 
-    /* ==================== TABLET TOUCH FIX V2 ==================== */
-    .tab-content,
-    #tab-0,
-    #tab-1,
-    #tab-2,
-    #tab-3,
-    #dashboard-trupps,
-    #trupp-list,
-    #atemschutz-container,
-    #building-floors {
-      position: relative;
-      z-index: 2;
-      pointer-events: auto !important;
+    /* ==================== CLEANFIX V4 TABLET ==================== */
+    .tablet-tabbar {
+      display: none;
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      background: rgba(24,24,27,0.98);
+      border-bottom: 1px solid #3f3f46;
+      padding: 0.75rem;
+      gap: 0.75rem;
+      overflow-x: auto;
+    }
+
+    .tablet-tabbar button {
+      min-height: 60px;
+      min-width: 170px;
+      border-radius: 1rem;
+      font-size: 1.05rem;
+      font-weight: 900;
+      background: #27272a;
+      border: 1px solid #3f3f46;
+      color: white;
+      white-space: nowrap;
       touch-action: manipulation;
     }
 
-    .tab-content button,
-    .tab-content input,
-    .tab-content select,
-    #dashboard-trupps button,
-    #trupp-list button,
-    #atemschutz-container button,
-    #building-floors button {
-      pointer-events: auto !important;
-      touch-action: manipulation !important;
-      -webkit-tap-highlight-color: rgba(239, 68, 68, 0.35);
-      cursor: pointer;
+    .tablet-tabbar button.active {
+      background: #dc2626;
+      border-color: #ef4444;
     }
 
-    .tablet-tabbar {
-      z-index: 50 !important;
+    .tablet-action-row {
+      display: none;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .tablet-delete-btn {
+      min-width: 54px;
+      min-height: 54px;
+      border-radius: 1rem;
+      background: #7f1d1d;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 900;
+      touch-action: manipulation;
     }
 
     @media (max-width: 1180px) {
-      .tab-content button,
-      #atemschutz-container button,
-      #trupp-list button,
-      #building-floors button {
-        min-height: 60px !important;
-        font-size: 1.05rem !important;
+      header {
+        position: static !important;
+        padding: 1rem !important;
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 1rem;
       }
 
+      header > div:first-child {
+        justify-content: center;
+      }
+
+      header > div:last-child {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem !important;
+      }
+
+      .sticky.top-20 {
+        display: none !important;
+      }
+
+      .tablet-tabbar,
       .tablet-action-row {
-        display: flex !important;
+        display: flex;
+      }
+
+      .p-8 {
+        padding: 1rem !important;
+      }
+
+      #dashboard-trupps,
+      #trupp-list,
+      #atemschutz-container,
+      #building-floors {
+        grid-template-columns: 1fr 1fr !important;
+      }
+
+      button,
+      input,
+      select {
+        min-height: 54px;
+        touch-action: manipulation;
+      }
+    }
+
+    @media (max-width: 760px) {
+      header > div:last-child,
+      #dashboard-trupps,
+      #trupp-list,
+      #atemschutz-container,
+      #building-floors {
+        grid-template-columns: 1fr !important;
       }
     }
 
@@ -334,8 +392,17 @@
 
     <!-- Tablet Tabbar Stable V2 -->
     <div class="tablet-tabbar">
-      <button onclick="showTab(2)" data-tc-action="show-atemschutz" id="tablet-tab-2">🛡️ Atemschutz</button>
-      <button onclick="showTab(1)" data-tc-action="show-trupps" id="tablet-tab-1">👥 Trupps</button>
+      <button onclick="showTab(2)" id="tablet-tab-2">🛡️ Atemschutz</button>
+      <button onclick="showTab(1)" id="tablet-tab-1">👥 Trupps</button>
+      <button onclick="showTab(3)" id="tablet-tab-3">🏢 Gebäude</button>
+      <button onclick="showTab(0)" id="tablet-tab-0">📊 Dashboard</button>
+    </div>
+
+
+    <!-- Tablet Tabbar CleanFix V4 -->
+    <div class="tablet-tabbar">
+      <button onclick="showTab(2)" id="tablet-tab-2">🛡️ Atemschutz</button>
+      <button onclick="showTab(1)" id="tablet-tab-1">👥 Trupps</button>
       <button onclick="showTab(3)" id="tablet-tab-3">🏢 Gebäude</button>
       <button onclick="showTab(0)" id="tablet-tab-0">📊 Dashboard</button>
     </div>
@@ -414,13 +481,13 @@
       <!-- TAB 2: Atemschutz -->
       <div id="tab-2" class="tab-content hidden">
         <h2 class="text-3xl font-bold mb-8">Trupp- & Atemschutzüberwachung</h2>
-        <div id="touchfix-atemschutz-actions" class="tablet-action-row"><button data-tc-action="add-trupp" onclick="addTrupp()" class="bg-red-600 hover:bg-red-700 text-white flex-1">➕ Trupp hinzufügen</button><button data-tc-action="show-trupps" onclick="showTab(1)" class="bg-zinc-800 hover:bg-zinc-700 text-white flex-1">👥 Trupps öffnen</button></div>
+        <div id="cleanfix-atemschutz-actions" class="tablet-action-row"><button onclick="addTrupp()" class="bg-red-600 hover:bg-red-700 text-white flex-1">➕ Trupp hinzufügen</button><button onclick="showTab(1)" class="bg-zinc-800 hover:bg-zinc-700 text-white flex-1">👥 Trupps öffnen</button></div>
 
         <div class="tablet-action-row">
-          <button onclick="addTrupp()" data-tc-action="add-trupp" class="bg-red-600 hover:bg-red-700 text-white flex-1">
+          <button onclick="addTrupp()" class="bg-red-600 hover:bg-red-700 text-white flex-1">
             ➕ Trupp hinzufügen
           </button>
-          <button onclick="showTab(1)" data-tc-action="show-trupps" class="bg-zinc-800 hover:bg-zinc-700 text-white flex-1">
+          <button onclick="showTab(1)" class="bg-zinc-800 hover:bg-zinc-700 text-white flex-1">
             👥 Truppverwaltung öffnen
           </button>
         </div>
@@ -1163,7 +1230,7 @@ function getMissionMinutes(trupp) {
               <div class="font-bold text-xl">${trupp.name}</div>
               <div class="text-sm text-zinc-400">${trupp.funk} • ${trupp.fahrzeug}</div>
             </div>
-            <button onclick="safeDeleteTrupp('${trupp.id}')" data-tc-action="delete-trupp" data-trupp-id="${trupp.id}" class="tablet-delete-btn hover:bg-red-800">
+            <button onclick="safeDeleteTrupp('${trupp.id}')" class="tablet-delete-btn hover:bg-red-800">
               <i class="fas fa-trash"></i>
             </button>
           </div>
@@ -1195,15 +1262,15 @@ function getMissionMinutes(trupp) {
                   <div class="font-mono text-xl font-bold">${trupp.innenangriffActive ? getInnenangriffDuration(trupp) : 'nicht aktiv'}</div>
                 </div>
                 ${trupp.innenangriffActive ? `
-                  <button onclick="stopInnenangriff('${trupp.id}')" data-tc-action="innen-stop" data-trupp-id="${trupp.id}" class="bg-zinc-700 hover:bg-zinc-600 px-4 py-2 rounded-xl font-semibold">⏹ Beenden</button>
+                  <button onclick="stopInnenangriff('${trupp.id}')" class="bg-zinc-700 hover:bg-zinc-600 px-4 py-2 rounded-xl font-semibold">⏹ Beenden</button>
                 ` : `
-                  <button onclick="startInnenangriff('${trupp.id}')" data-tc-action="innen-start" data-trupp-id="${trupp.id}" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl font-semibold">▶ Start</button>
+                  <button onclick="startInnenangriff('${trupp.id}')" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl font-semibold">▶ Start</button>
                 `}
               </div>
             </div>
 
             <div class="flex items-center justify-between mb-3">
-              <div onclick="openPressureModal('${trupp.id}')" data-tc-action="pressure" data-trupp-id="${trupp.id}" 
+              <div onclick="openPressureModal('${trupp.id}')" 
                    class="cursor-pointer bg-zinc-800 hover:bg-zinc-700 px-6 py-3 rounded-2xl font-mono text-2xl font-semibold">
                 ${trupp.druck} bar
               </div>
@@ -1215,12 +1282,12 @@ function getMissionMinutes(trupp) {
             </div>
 
             <!-- QR-Scan Button -->
-            <button onclick="triggerMayday('${trupp.id}')" data-tc-action="mayday" data-trupp-id="${trupp.id}" 
+            <button onclick="triggerMayday('${trupp.id}')" 
                     class="w-full mb-3 py-3 bg-red-700 hover:bg-red-800 rounded-2xl font-bold flex items-center justify-center gap-2">
               🚨 MAYDAY
             </button>
 
-            <button onclick="scanAGT('${trupp.id}')" data-tc-action="qr" data-trupp-id="${trupp.id}" 
+            <button onclick="scanAGT('${trupp.id}')" 
                     class="w-full mb-3 py-3 bg-emerald-600 hover:bg-emerald-700 rounded-2xl font-semibold flex items-center justify-center gap-2">
               <i class="fas fa-qrcode"></i> AGT scannen (Demo)
             </button>
@@ -1298,7 +1365,7 @@ function getMissionMinutes(trupp) {
               <div class="px-4 py-1 rounded-full text-xs font-semibold ${trupp.color === 'red' ? 'status-red' : trupp.color === 'yellow' ? 'status-yellow' : 'status-green'}">
                 ${trupp.color === 'red' ? '🔴 KRITISCH' : trupp.color === 'yellow' ? '🟡 NIEDRIG' : '🟢 OK'}
               </div>
-              <button onclick="safeDeleteTrupp('${trupp.id}')" data-tc-action="delete-trupp" data-trupp-id="${trupp.id}" class="tablet-delete-btn" title="Trupp löschen">🗑️</button>
+              <button onclick="safeDeleteTrupp('${trupp.id}')" class="tablet-delete-btn" title="Trupp löschen">🗑️</button>
             </div>
           </div>
           
@@ -1310,7 +1377,7 @@ function getMissionMinutes(trupp) {
             </div>
           </div>
           
-          <button onclick="openPressureModal('${trupp.id}')" data-tc-action="pressure" data-trupp-id="${trupp.id}" 
+          <button onclick="openPressureModal('${trupp.id}')" 
                   class="mt-8 w-full py-4 bg-zinc-800 hover:bg-zinc-700 rounded-2xl font-semibold">Neue Druckmeldung</button>
         `;
         container.appendChild(card);
@@ -2016,52 +2083,6 @@ function getMissionMinutes(trupp) {
       });
     }
 
-
-    function handleTruppControlAction(action, id = null) {
-      try {
-        if (action === 'add-trupp') return addTrupp();
-        if (action === 'show-trupps') return showTab(1);
-        if (action === 'show-atemschutz') return showTab(2);
-        if (action === 'delete-trupp') return safeDeleteTrupp(id);
-        if (action === 'pressure') return openPressureModal(id);
-        if (action === 'qr') return scanAGT(id);
-        if (action === 'mayday') return triggerMayday(id);
-        if (action === 'innen-start') return startInnenangriff(id);
-        if (action === 'innen-stop') return stopInnenangriff(id);
-      } catch (error) {
-        console.error('TruppControl TouchAction Fehler:', action, id, error);
-        alert('Aktion konnte nicht ausgeführt werden. Bitte Seite neu laden.');
-      }
-    }
-
-    function setupTabletTouchFix() {
-      document.addEventListener('pointerup', function(event) {
-        const target = event.target.closest('[data-tc-action]');
-        if (!target) return;
-
-        event.preventDefault();
-        event.stopPropagation();
-
-        const action = target.dataset.tcAction;
-        const id = target.dataset.truppId || null;
-        handleTruppControlAction(action, id);
-      }, { passive: false });
-
-      document.addEventListener('touchend', function(event) {
-        const target = event.target.closest('[data-tc-action]');
-        if (!target) return;
-
-        event.preventDefault();
-        event.stopPropagation();
-
-        const action = target.dataset.tcAction;
-        const id = target.dataset.truppId || null;
-        handleTruppControlAction(action, id);
-      }, { passive: false });
-
-      console.log('TruppControl FunctionFix V3 aktiv');
-    }
-
     // ==================== TABS ====================
     function showTab(n) {
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
@@ -2091,15 +2112,15 @@ function getMissionMinutes(trupp) {
     // Kein automatischer Druckabfall mehr
 
 
-    // ==================== KOMPATIBILITÄTS-FIX V3 ====================
-    // Einige Tablet-Buttons erwarten diese Funktionsnamen direkt im globalen Scope.
-    // Diese Wrapper stellen sicher, dass die Oberfläche auch nach Umbauten weiter reagiert.
-
-    if (typeof window.currentStatus === 'undefined') {
-      window.currentStatus = typeof currentStatus !== 'undefined' ? currentStatus : 'active';
+    // ==================== CLEANFIX V4 GLOBALS ====================
+    function updateTabletTabs(activeIndex) {
+      [0, 1, 2, 3].forEach(i => {
+        const btn = document.getElementById(`tablet-tab-${i}`);
+        if (btn) btn.classList.toggle('active', i === activeIndex);
+      });
     }
 
-    function ensureVisibleTab(index) {
+    function showTab(index) {
       const tabContents = document.querySelectorAll('.tab-content');
       tabContents.forEach((tab, i) => {
         tab.classList.toggle('hidden', i !== index);
@@ -2110,14 +2131,8 @@ function getMissionMinutes(trupp) {
         btn.classList.toggle('active', i === index);
       });
 
-      [0, 1, 2, 3].forEach(i => {
-        const btn = document.getElementById(`tablet-tab-${i}`);
-        if (btn) btn.classList.toggle('active', i === index);
-      });
-    }
+      updateTabletTabs(index);
 
-    function showTab(index) {
-      ensureVisibleTab(index);
       if (typeof renderAll === 'function') {
         renderAll();
       }
@@ -2125,54 +2140,31 @@ function getMissionMinutes(trupp) {
 
     function pauseOrResumeEinsatz() {
       if (typeof currentStatus === 'undefined') {
-        window.currentStatus = 'active';
+        currentStatus = 'active';
       }
 
       if (currentStatus === 'ended') return;
 
       if (currentStatus === 'active') {
         currentStatus = 'paused';
-        if (typeof addEinsatzLogEntry === 'function') {
-          addEinsatzLogEntry('Einsatzstatus', 'Einsatz pausiert');
-        }
+        if (typeof addEinsatzLogEntry === 'function') addEinsatzLogEntry('Einsatzstatus', 'Einsatz pausiert');
       } else {
         currentStatus = 'active';
-        if (typeof addEinsatzLogEntry === 'function') {
-          addEinsatzLogEntry('Einsatzstatus', 'Einsatz fortgesetzt');
-        }
+        if (typeof addEinsatzLogEntry === 'function') addEinsatzLogEntry('Einsatzstatus', 'Einsatz fortgesetzt');
       }
 
-      if (typeof updateEinsatzStatusDisplay === 'function') {
-        updateEinsatzStatusDisplay();
-      } else {
-        const icon = document.getElementById('status-icon');
-        const text = document.getElementById('status-text');
-        const pauseBtn = document.getElementById('pause-btn');
-
-        if (currentStatus === 'paused') {
-          if (icon) icon.textContent = '🟡';
-          if (text) text.textContent = 'Pausiert';
-          if (pauseBtn) pauseBtn.textContent = '▶ Fortsetzen';
-        } else {
-          if (icon) icon.textContent = '🟢';
-          if (text) text.textContent = 'Aktiv';
-          if (pauseBtn) pauseBtn.textContent = '⏸ Pausieren';
-        }
-      }
-
+      if (typeof updateEinsatzStatusDisplay === 'function') updateEinsatzStatusDisplay();
       if (typeof renderAll === 'function') renderAll();
     }
 
     function endEinsatz() {
       if (typeof currentStatus === 'undefined') {
-        window.currentStatus = 'active';
+        currentStatus = 'active';
       }
 
       if (currentStatus === 'ended') return;
 
-      if (!confirm('Einsatz wirklich beenden? Alle Timer und Alarmtöne werden gestoppt.')) {
-        return;
-      }
+      if (!confirm('Einsatz wirklich beenden? Alle Timer und Alarmtöne werden gestoppt.')) return;
 
       currentStatus = 'ended';
 
@@ -2194,26 +2186,12 @@ function getMissionMinutes(trupp) {
 
       if (typeof stopAlarmSound === 'function') stopAlarmSound();
       if (typeof addEinsatzLogEntry === 'function') addEinsatzLogEntry('Einsatzstatus', 'Einsatz beendet');
-
-      if (typeof updateEinsatzStatusDisplay === 'function') {
-        updateEinsatzStatusDisplay();
-      } else {
-        const icon = document.getElementById('status-icon');
-        const text = document.getElementById('status-text');
-        if (icon) icon.textContent = '🔴';
-        if (text) text.textContent = 'Beendet';
-      }
-
+      if (typeof updateEinsatzStatusDisplay === 'function') updateEinsatzStatusDisplay();
       if (typeof renderAll === 'function') renderAll();
 
       if (confirm('Einsatz wurde beendet. PDF-Protokoll jetzt exportieren?')) {
-        if (typeof safeExportPDF === 'function') safeExportPDF();
-        else if (typeof exportPDF === 'function') exportPDF();
+        safeExportPDF();
       }
-    }
-
-    function handleEndEinsatz() {
-      endEinsatz();
     }
 
     function safeExportPDF() {
@@ -2222,7 +2200,6 @@ function getMissionMinutes(trupp) {
           alert('PDF-Funktion ist nicht verfügbar.');
           return;
         }
-
         exportPDF();
       } catch (error) {
         console.error('PDF Export Fehler:', error);
@@ -2230,16 +2207,8 @@ function getMissionMinutes(trupp) {
       }
     }
 
-    function updateTabletTabs(activeIndex) {
-      [0, 1, 2, 3].forEach(i => {
-        const btn = document.getElementById(`tablet-tab-${i}`);
-        if (btn) btn.classList.toggle('active', i === activeIndex);
-      });
-    }
-
 
     window.onload = function() {
-      setupTabletTouchFix();
       updateAlarmzeit();
       document.getElementById('einsatz-nr').value = generateEinsatzNummer();
       initDemoData();

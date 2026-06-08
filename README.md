@@ -1,10 +1,11 @@
-# TruppControl FunctionFix V3
+# TruppControl CleanFix V4
 
-Behebt fehlende globale Funktionen:
-- showTab()
-- pauseOrResumeEinsatz()
-- endEinsatz()
-- safeExportPDF()
+Diese Version behebt:
+- SyntaxError Unexpected token
+- showTab is not defined
+- pauseOrResumeEinsatz is not defined
+- handleEndEinsatz is not defined
+- safeExportPDF ist vorhanden
 
 ## Nach Upload öffnen
-https://timwullen1-blip.github.io/atemguard/?v=functionfix-v3
+https://timwullen1-blip.github.io/atemguard/?v=cleanfix-v4
