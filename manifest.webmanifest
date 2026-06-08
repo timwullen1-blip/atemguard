@@ -1,8 +1,8 @@
 {
-  "name": "TruppControl CleanFix",
-  "short_name": "TruppControl",
-  "description": "TruppControl CleanFix V4 ohne Syntaxfehler.",
-  "start_url": "./index.html?v=cleanfix-v4",
+  "name": "AtemGuard Tablet Stable V5",
+  "short_name": "AtemGuard",
+  "description": "Produktivversion ohne Demo-Daten mit echtem QR-Scan.",
+  "start_url": "./index.html?v=stable-v5-nodemo",
   "scope": "./",
   "display": "standalone",
   "background_color": "#09090b",

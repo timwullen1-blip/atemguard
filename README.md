@@ -1,11 +1,16 @@
-# TruppControl CleanFix V4
+# AtemGuard Tablet Stable V5 No Demo
 
-Diese Version behebt:
-- SyntaxError Unexpected token
-- showTab is not defined
-- pauseOrResumeEinsatz is not defined
-- handleEndEinsatz is not defined
-- safeExportPDF ist vorhanden
+Diese Version entfernt alle Demo-Startdaten.
 
-## Nach Upload öffnen
-https://timwullen1-blip.github.io/atemguard/?v=cleanfix-v4
+## Neu
+- App startet ohne vorangelegte Trupps
+- keine Demo-AGT-Liste
+- keine Demo-Protokolle
+- leerer Startzustand mit Hinweis "Keine Trupps aktiv"
+- Einsatznummer wird automatisch generiert
+- echter QR-Scan bleibt erhalten
+- PDF-Fix bleibt erhalten
+
+## Nach Upload
+Auf dem Tablet öffnen:
+https://timwullen1-blip.github.io/atemguard/?v=stable-v5-nodemo
