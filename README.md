@@ -1,6 +1,10 @@
-# TruppControl TouchFix V2
+# TruppControl FunctionFix V3
 
-Behebt Tablet-Touch-Probleme bei Inhaltsbuttons.
+Behebt fehlende globale Funktionen:
+- showTab()
+- pauseOrResumeEinsatz()
+- endEinsatz()
+- safeExportPDF()
 
 ## Nach Upload öffnen
-https://timwullen1-blip.github.io/atemguard/?v=touchfix-v2
+https://timwullen1-blip.github.io/atemguard/?v=functionfix-v3

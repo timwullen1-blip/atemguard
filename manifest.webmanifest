@@ -1,8 +1,8 @@
 {
-  "name": "TruppControl TouchFix",
+  "name": "TruppControl FunctionFix",
   "short_name": "TruppControl",
-  "description": "TruppControl mit Tablet-Touch-Fix für Inhaltsbuttons.",
-  "start_url": "./index.html?v=touchfix-v2",
+  "description": "TruppControl mit Kompatibilitätsfix für Tablet-Buttons.",
+  "start_url": "./index.html?v=functionfix-v3",
   "scope": "./",
   "display": "standalone",
   "background_color": "#09090b",

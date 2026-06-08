@@ -318,7 +318,7 @@
           ⏸ Pausieren
         </button>
 
-        <button onclick="handleEndEinsatz()" id="end-einsatz-btn"
+        <button onclick="endEinsatz()" id="end-einsatz-btn"
                 class="px-5 py-3 rounded-2xl font-semibold bg-red-700 hover:bg-red-800 text-white">
           ⏹ Einsatz beenden
         </button>
@@ -2059,7 +2059,7 @@ function getMissionMinutes(trupp) {
         handleTruppControlAction(action, id);
       }, { passive: false });
 
-      console.log('TruppControl Tablet TouchFix V2 aktiv');
+      console.log('TruppControl FunctionFix V3 aktiv');
     }
 
     // ==================== TABS ====================
@@ -2089,6 +2089,154 @@ function getMissionMinutes(trupp) {
     }
 
     // Kein automatischer Druckabfall mehr
+
+
+    // ==================== KOMPATIBILITÄTS-FIX V3 ====================
+    // Einige Tablet-Buttons erwarten diese Funktionsnamen direkt im globalen Scope.
+    // Diese Wrapper stellen sicher, dass die Oberfläche auch nach Umbauten weiter reagiert.
+
+    if (typeof window.currentStatus === 'undefined') {
+      window.currentStatus = typeof currentStatus !== 'undefined' ? currentStatus : 'active';
+    }
+
+    function ensureVisibleTab(index) {
+      const tabContents = document.querySelectorAll('.tab-content');
+      tabContents.forEach((tab, i) => {
+        tab.classList.toggle('hidden', i !== index);
+      });
+
+      const desktopButtons = document.querySelectorAll('.tab-btn');
+      desktopButtons.forEach((btn, i) => {
+        btn.classList.toggle('active', i === index);
+      });
+
+      [0, 1, 2, 3].forEach(i => {
+        const btn = document.getElementById(`tablet-tab-${i}`);
+        if (btn) btn.classList.toggle('active', i === index);
+      });
+    }
+
+    function showTab(index) {
+      ensureVisibleTab(index);
+      if (typeof renderAll === 'function') {
+        renderAll();
+      }
+    }
+
+    function pauseOrResumeEinsatz() {
+      if (typeof currentStatus === 'undefined') {
+        window.currentStatus = 'active';
+      }
+
+      if (currentStatus === 'ended') return;
+
+      if (currentStatus === 'active') {
+        currentStatus = 'paused';
+        if (typeof addEinsatzLogEntry === 'function') {
+          addEinsatzLogEntry('Einsatzstatus', 'Einsatz pausiert');
+        }
+      } else {
+        currentStatus = 'active';
+        if (typeof addEinsatzLogEntry === 'function') {
+          addEinsatzLogEntry('Einsatzstatus', 'Einsatz fortgesetzt');
+        }
+      }
+
+      if (typeof updateEinsatzStatusDisplay === 'function') {
+        updateEinsatzStatusDisplay();
+      } else {
+        const icon = document.getElementById('status-icon');
+        const text = document.getElementById('status-text');
+        const pauseBtn = document.getElementById('pause-btn');
+
+        if (currentStatus === 'paused') {
+          if (icon) icon.textContent = '🟡';
+          if (text) text.textContent = 'Pausiert';
+          if (pauseBtn) pauseBtn.textContent = '▶ Fortsetzen';
+        } else {
+          if (icon) icon.textContent = '🟢';
+          if (text) text.textContent = 'Aktiv';
+          if (pauseBtn) pauseBtn.textContent = '⏸ Pausieren';
+        }
+      }
+
+      if (typeof renderAll === 'function') renderAll();
+    }
+
+    function endEinsatz() {
+      if (typeof currentStatus === 'undefined') {
+        window.currentStatus = 'active';
+      }
+
+      if (currentStatus === 'ended') return;
+
+      if (!confirm('Einsatz wirklich beenden? Alle Timer und Alarmtöne werden gestoppt.')) {
+        return;
+      }
+
+      currentStatus = 'ended';
+
+      if (typeof trupps !== 'undefined') {
+        trupps.forEach(trupp => {
+          if (trupp.innenangriffActive) {
+            const duration = typeof getInnenangriffDuration === 'function' ? getInnenangriffDuration(trupp) : 'unbekannt';
+            trupp.innenangriffActive = false;
+            trupp.innenangriffStart = null;
+            if (typeof addLogEntry === 'function') {
+              addLogEntry(trupp, 'Innenangriff automatisch beendet', `Einsatz beendet | Dauer: ${duration}`);
+            }
+          }
+
+          trupp.alarmAcknowledged = true;
+          trupp.maydayAcknowledged = true;
+        });
+      }
+
+      if (typeof stopAlarmSound === 'function') stopAlarmSound();
+      if (typeof addEinsatzLogEntry === 'function') addEinsatzLogEntry('Einsatzstatus', 'Einsatz beendet');
+
+      if (typeof updateEinsatzStatusDisplay === 'function') {
+        updateEinsatzStatusDisplay();
+      } else {
+        const icon = document.getElementById('status-icon');
+        const text = document.getElementById('status-text');
+        if (icon) icon.textContent = '🔴';
+        if (text) text.textContent = 'Beendet';
+      }
+
+      if (typeof renderAll === 'function') renderAll();
+
+      if (confirm('Einsatz wurde beendet. PDF-Protokoll jetzt exportieren?')) {
+        if (typeof safeExportPDF === 'function') safeExportPDF();
+        else if (typeof exportPDF === 'function') exportPDF();
+      }
+    }
+
+    function handleEndEinsatz() {
+      endEinsatz();
+    }
+
+    function safeExportPDF() {
+      try {
+        if (typeof exportPDF !== 'function') {
+          alert('PDF-Funktion ist nicht verfügbar.');
+          return;
+        }
+
+        exportPDF();
+      } catch (error) {
+        console.error('PDF Export Fehler:', error);
+        alert('PDF konnte nicht erstellt werden. Bitte Seite neu laden.');
+      }
+    }
+
+    function updateTabletTabs(activeIndex) {
+      [0, 1, 2, 3].forEach(i => {
+        const btn = document.getElementById(`tablet-tab-${i}`);
+        if (btn) btn.classList.toggle('active', i === activeIndex);
+      });
+    }
+
 
     window.onload = function() {
       setupTabletTouchFix();
