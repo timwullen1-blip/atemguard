@@ -1,7 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 512 512">
   <rect width="512" height="512" rx="96" fill="#18181b"/>
-  <path d="M256 52l164 64v116c0 103-66 191-164 229C158 423 92 335 92 232V116l164-64z" fill="#dc2626"/>
-  <path d="M256 96l112 44v90c0 74-43 138-112 173-69-35-112-99-112-173v-90l112-44z" fill="#09090b"/>
-  <text x="256" y="270" font-family="Arial, sans-serif" font-size="82" font-weight="800" text-anchor="middle" fill="#ffffff">TC</text>
-  <text x="256" y="340" font-family="Arial, sans-serif" font-size="32" font-weight="700" text-anchor="middle" fill="#ffffff">TruppControl</text>
+  <circle cx="256" cy="256" r="210" fill="#09090b" stroke="#dc2626" stroke-width="28"/>
+  <text x="256" y="280" font-family="Arial, sans-serif" font-size="96" font-weight="900" text-anchor="middle" fill="#ffffff">TC</text>
+  <text x="256" y="345" font-family="Arial, sans-serif" font-size="34" font-weight="700" text-anchor="middle" fill="#dc2626">TruppControl</text>
 </svg>

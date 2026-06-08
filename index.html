@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>TruppControl - Digitale Trupp- & Atemschutzüberwachung</title>
+  <title>AtemGuard - Feuerwehr Einsatz Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -219,7 +219,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="TruppControl">
+  <meta name="apple-mobile-web-app-title" content="AtemGuard">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.svg">
 </head>
@@ -230,8 +230,8 @@
       <div class="flex items-center gap-4">
         <div class="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center text-3xl">🛡️</div>
         <div>
-          <h1 class="text-4xl font-bold tracking-tight text-red-500">TruppControl</h1>
-          <p class="text-sm text-zinc-400">Digitale Trupp- & Atemschutzüberwachung</p>
+          <h1 class="text-4xl font-bold tracking-tight text-red-500">AtemGuard</h1>
+          <p class="text-sm text-zinc-400">Einsatz- & Atemschutzüberwachung</p>
         </div>
       </div>
       
@@ -270,7 +270,7 @@
           ⏸ Pausieren
         </button>
 
-        <button onclick="endEinsatz()" id="end-einsatz-btn"
+        <button onclick="handleEndEinsatz()" id="end-einsatz-btn"
                 class="px-5 py-3 rounded-2xl font-semibold bg-red-700 hover:bg-red-800 text-white">
           ⏹ Einsatz beenden
         </button>
@@ -326,17 +326,17 @@
 
               <div>
                 <label class="block text-zinc-400 text-sm mb-1">Einsatzort</label>
-                <input id="einsatz-ort" value="" placeholder="Einsatzort eingeben"
+                <input id="einsatz-ort" value="Musterstraße 42, 12345 Musterstadt - Kellerbrand" 
                        class="w-full bg-zinc-800 rounded-2xl px-5 py-4 text-lg focus:outline-none focus:ring-2 focus:ring-red-500">
               </div>
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-zinc-400 text-sm mb-1">Alarmierte Einheiten</label>
-                  <input value="" placeholder="Alarmierte Einheiten" class="w-full bg-zinc-800 rounded-2xl px-5 py-4 focus:outline-none">
+                  <input value="LF 16/12 + RW + NEF" class="w-full bg-zinc-800 rounded-2xl px-5 py-4 focus:outline-none">
                 </div>
                 <div>
                   <label class="block text-zinc-400 text-sm mb-1">Führung</label>
-                  <input value="" placeholder="Führung" class="w-full bg-zinc-800 rounded-2xl px-5 py-4 focus:outline-none">
+                  <input value="Zugführer Meier" class="w-full bg-zinc-800 rounded-2xl px-5 py-4 focus:outline-none">
                 </div>
               </div>
             </div>
@@ -430,7 +430,7 @@
   <div id="floor-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
     <div class="bg-zinc-900 rounded-3xl p-8 max-w-2xl w-full mx-4">
       <h3 class="text-2xl font-bold mb-2">Bereich / Stockwerk hinzufügen</h3>
-      <p class="text-zinc-400 mb-6">Wähle ein Stockwerk und die Richtung. TruppControl sortiert die Bereiche automatisch.</p>
+      <p class="text-zinc-400 mb-6">Wähle ein Stockwerk und die Richtung. AtemGuard sortiert die Bereiche automatisch.</p>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>
@@ -893,6 +893,24 @@ function getMissionMinutes(trupp) {
 
 
 
+
+    // ==================== AGT-DATENBANK ====================
+    // QR-Code enthält nur AGT001, AGT002 usw.
+    const agtDatenbank = {
+      "AGT001": "Christian Nußbaum",
+      "AGT002": "Bastian Mänz",
+      "AGT003": "Maik Bassauer",
+      "AGT004": "Steven Bassauer",
+      "AGT005": "Philipp Wullen",
+      "AGT006": "Tim Wullen",
+      "AGT007": "Marie Verspeek",
+      "AGT008": "Sophia Verspeek",
+      "AGT009": "Sarah Mänz",
+      "AGT010": "Andreas Wennmacher",
+      "AGT011": "Mathias Heitzer",
+      "AGT012": "Marvin Lang"
+    };
+
     // ==================== QR-Scan Simulation ====================
     function scanAGT(truppId) {
       currentScanTruppId = truppId;
@@ -934,20 +952,43 @@ function getMissionMinutes(trupp) {
     let qrScannerInstance = null;
 
     function parseAGTQRCode(rawText) {
-      try {
-        const data = JSON.parse(rawText);
+      const qrValue = String(rawText || '').trim();
+
+      if (agtDatenbank[qrValue]) {
         return {
-          name: data.name || data.Name || 'Unbekannter AGT',
-          einheit: data.einheit || data.Einheit || 'Unbekannte Einheit',
-          agtNr: data.agtNr || data.agt_nr || data.nr || '',
+          name: agtDatenbank[qrValue],
+          einheit: '',
+          agtNr: qrValue,
+          funktion: ''
+        };
+      }
+
+      try {
+        const data = JSON.parse(qrValue);
+        const id = data.agtNr || data.agt_nr || data.id || data.nr || '';
+        return {
+          name: data.name || data.Name || agtDatenbank[id] || 'Unbekannter AGT',
+          einheit: data.einheit || data.Einheit || '',
+          agtNr: id,
           funktion: data.funktion || data.Funktion || ''
         };
       } catch (e) {
-        const parts = rawText.split(';').map(p => p.trim());
+        const parts = qrValue.split(';').map(p => p.trim());
+        const id = parts[0] || qrValue;
+
+        if (agtDatenbank[id]) {
+          return {
+            name: agtDatenbank[id],
+            einheit: '',
+            agtNr: id,
+            funktion: ''
+          };
+        }
+
         return {
-          name: parts[0] || rawText,
-          einheit: parts[1] || 'Unbekannte Einheit',
-          agtNr: parts[2] || '',
+          name: parts[0] || qrValue,
+          einheit: parts[1] || '',
+          agtNr: parts[2] || qrValue,
           funktion: parts[3] || ''
         };
       }
@@ -965,9 +1006,9 @@ function getMissionMinutes(trupp) {
         scannedAt: formatTime()
       });
 
-      addLogEntry(trupp, 'AGT Scan', `${agt.name} (${agt.einheit})${agt.agtNr ? ' | AGT-Nr: ' + agt.agtNr : ''}${agt.funktion ? ' | ' + agt.funktion : ''} wurde per QR gescannt`);
+      addLogEntry(trupp, 'AGT Scan', `${agt.name}${agt.einheit ? ' (' + agt.einheit + ')' : ''}${agt.agtNr ? ' | AGT-Nr: ' + agt.agtNr : ''}${agt.funktion ? ' | ' + agt.funktion : ''} wurde per QR gescannt`);
       if (typeof logTruppChange === 'function') {
-        logTruppChange(trupp, 'AGT hinzugefügt', '-', `${agt.name} (${agt.einheit})`);
+        logTruppChange(trupp, 'AGT hinzugefügt', '-', `${agt.name}${agt.einheit ? ' (' + agt.einheit + ')' : ''}`);
       }
 
       closeQRModal();
@@ -980,7 +1021,7 @@ function getMissionMinutes(trupp) {
       const list = document.getElementById('qr-agt-list');
 
       if (!window.Html5Qrcode) {
-        status.textContent = 'QR-Scanner konnte nicht geladen werden. Internetverbindung prüfen oder Demo nutzen.';
+        status.textContent = 'QR-Scanner konnte nicht geladen werden. Internetverbindung prüfen oder Seite neu laden.';
         return;
       }
 
@@ -1173,7 +1214,7 @@ function getMissionMinutes(trupp) {
 
             <button onclick="scanAGT('${trupp.id}')" 
                     class="w-full mb-3 py-3 bg-emerald-600 hover:bg-emerald-700 rounded-2xl font-semibold flex items-center justify-center gap-2">
-              <i class="fas fa-qrcode"></i> AGT scannen 
+              <i class="fas fa-qrcode"></i> AGT scannen (Demo)
             </button>
 
             <!-- Gescannte Mitglieder -->
@@ -1182,7 +1223,7 @@ function getMissionMinutes(trupp) {
               <div class="space-y-1">
                 ${trupp.members.map(m => `
                   <div class="bg-zinc-800 px-3 py-1.5 rounded-xl text-sm flex justify-between">
-                    <span>${m.name} (${m.einheit})</span>
+                    <span>${m.name}${m.einheit ? ' (' + m.einheit + ')' : ''}</span>
                     <span class="text-zinc-500 text-xs">${m.scannedAt}</span>
                   </div>
                 `).join('')}
@@ -1626,12 +1667,12 @@ function getMissionMinutes(trupp) {
     function getEinsatzArtTitle() {
       const art = getEinsatzArt();
 
-      if (art === 'Übung') return 'ÜBUNGSDOKUMENTATION - TruppControl';
-      if (art === 'Belastungsübung') return 'NACHWEIS BELASTUNGSÜBUNG - TruppControl';
-      if (art === 'Heißausbildung') return 'NACHWEIS HEISSAUSBILDUNG - TruppControl';
-      if (art === 'Lehrgang') return 'LEHRGANGSDOKUMENTATION - TruppControl';
+      if (art === 'Übung') return 'ÜBUNGSDOKUMENTATION - AtemGuard';
+      if (art === 'Belastungsübung') return 'NACHWEIS BELASTUNGSÜBUNG - AtemGuard';
+      if (art === 'Heißausbildung') return 'NACHWEIS HEISSAUSBILDUNG - AtemGuard';
+      if (art === 'Lehrgang') return 'LEHRGANGSDOKUMENTATION - AtemGuard';
 
-      return 'EINSATZPROTOKOLL - TruppControl';
+      return 'EINSATZPROTOKOLL - AtemGuard';
     }
 
     function getEinsatzArtDescription() {
@@ -1791,60 +1832,6 @@ function getMissionMinutes(trupp) {
     }
 
 
-
-    function cleanPDFText(value) {
-      return String(value ?? '')
-        .replace(/[🚒🎓💪🔥📚🟢🟡🔴🚨🔇▶⏹✅⚠️🛡️]/g, '')
-        .replace(/→/g, '->')
-        .replace(/–/g, '-')
-        .replace(/—/g, '-')
-        .replace(/[“”]/g, '"')
-        .replace(/[‘’]/g, "'")
-        .replace(/•/g, '-')
-        .replace(/ä/g, 'ae')
-        .replace(/ö/g, 'oe')
-        .replace(/ü/g, 'ue')
-        .replace(/Ä/g, 'Ae')
-        .replace(/Ö/g, 'Oe')
-        .replace(/Ü/g, 'Ue')
-        .replace(/ß/g, 'ss')
-        .replace(/[^\x20-\x7E]/g, '');
-    }
-
-    function buildCompleteProtocol() {
-      const protocol = [];
-
-      if (typeof einsatzLog !== 'undefined' && einsatzLog && einsatzLog.length > 0) {
-        einsatzLog.forEach(entry => {
-          protocol.push({
-            time: entry.time || '',
-            timestamp: entry.timestamp || 0,
-            source: 'Einsatz',
-            type: entry.type || '',
-            text: entry.text || ''
-          });
-        });
-      }
-
-      if (typeof trupps !== 'undefined' && trupps && trupps.length > 0) {
-        trupps.forEach(trupp => {
-          if (trupp.log && trupp.log.length > 0) {
-            trupp.log.forEach(entry => {
-              protocol.push({
-                time: entry.time || '',
-                timestamp: entry.timestamp || 0,
-                source: trupp.name || 'Trupp',
-                type: entry.type || '',
-                text: entry.text || ''
-              });
-            });
-          }
-        });
-      }
-
-      return protocol.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-    }
-
     function isTabletOrMobileDevice() {
       return /iPad|iPhone|Android|Mobile|Tablet/i.test(navigator.userAgent) || window.innerWidth <= 1180;
     }
@@ -1853,7 +1840,6 @@ function getMissionMinutes(trupp) {
       const modal = document.getElementById('pdf-export-modal');
       if (modal) modal.classList.add('hidden');
     }
-
 
     function openPDFResult(doc, filename) {
       const blob = doc.output('blob');
@@ -1868,22 +1854,19 @@ function getMissionMinutes(trupp) {
       }
 
       if (isTabletOrMobileDevice()) {
-        // iPad/Safari blockiert Downloads oft. Deshalb immer sichtbaren Link anzeigen.
-        if (modal) modal.classList.remove('hidden');
+        const opened = window.open(url, '_blank');
 
-        try {
-          const opened = window.open(url, '_blank');
-          if (!opened) {
-            console.warn('Popup blockiert. PDF über den Button im Modal öffnen.');
-          }
-        } catch (e) {
-          console.warn('PDF konnte nicht automatisch geöffnet werden:', e);
+        if (modal) {
+          modal.classList.remove('hidden');
+        }
+
+        if (!opened) {
+          console.warn('Popup wurde blockiert. PDF-Link im Modal nutzen.');
         }
       } else {
         doc.save(filename);
       }
     }
-
 
     function safeExportPDF() {
       try {
@@ -1891,16 +1874,10 @@ function getMissionMinutes(trupp) {
           alert('PDF-Bibliothek wurde noch nicht geladen. Bitte Internetverbindung prüfen und Seite neu laden.');
           return;
         }
-
-        if (typeof exportPDF !== 'function') {
-          alert('PDF-Funktion ist nicht verfügbar.');
-          return;
-        }
-
         exportPDF();
       } catch (error) {
         console.error('PDF Export Fehler:', error);
-        alert('PDF konnte nicht erstellt werden: ' + (error && error.message ? error.message : error));
+        alert('PDF konnte nicht erstellt werden. Bitte Seite neu laden oder Konsole prüfen.');
       }
     }
 
@@ -2076,8 +2053,8 @@ function getMissionMinutes(trupp) {
         }, 1000);
       }
       
-      console.log("%cTruppControl Tablet Stable V2 gestartet! ✅", "color: #ef4444; font-size: 16px");
-      console.log('TruppControl Funktionen geprüft:', {
+      console.log("%cAtemGuard Tablet Stable V2 gestartet! ✅", "color: #ef4444; font-size: 16px");
+      console.log('AtemGuard Funktionen geprüft:', {
         handleEndEinsatz: typeof handleEndEinsatz,
         endEinsatz: typeof endEinsatz,
         exportPDF: typeof exportPDF
@@ -2085,11 +2062,30 @@ function getMissionMinutes(trupp) {
     };
   </script>
 
+
+  <!-- Modal für Tablet PDF Export -->
+  <div id="pdf-export-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[80]">
+    <div class="bg-zinc-900 rounded-3xl p-8 max-w-md w-full mx-4 text-center">
+      <h3 class="text-2xl font-bold mb-3">PDF-Protokoll erstellt</h3>
+      <p class="text-zinc-400 mb-6">
+        Auf dem Tablet öffnet sich das Protokoll in einem neuen Fenster oder kann über den Button geöffnet werden.
+      </p>
+      <a id="pdf-open-link" href="#" target="_blank"
+         class="block bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl font-bold mb-3">
+        📄 PDF öffnen
+      </a>
+      <button onclick="closePDFExportModal()"
+              class="w-full bg-zinc-800 hover:bg-zinc-700 py-4 rounded-2xl font-semibold">
+        Schließen
+      </button>
+    </div>
+  </div>
+
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./service-worker.js')
-          .then(() => console.log('TruppControl Stable V2 Service Worker aktiv'))
+          .then(() => console.log('AtemGuard Stable V2 Service Worker aktiv'))
           .catch(err => console.warn('Service Worker Fehler:', err));
       });
     }

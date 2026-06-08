@@ -1,4 +1,4 @@
-const CACHE_NAME = 'truppcontrol-pdffix-stable-20260607';
+const CACHE_NAME = 'truppcontrol-agt-db-v1-20260608';
 const ASSETS = [
   './',
   './index.html',
