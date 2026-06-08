@@ -1,8 +1,11 @@
-# TruppControl Android Legacy DesignFix V2
+# TruppControl Android Legacy DesignFix V3
 
-Kombiniert:
-- LegacyJS V1, bei dem Buttons funktionieren
-- Offline Design-CSS, damit Huawei nicht auf Tailwind-CDN angewiesen ist
+Fix gegenüber V2:
+- doppelter Touch-Fallback entfernt
+- dadurch wird beim Klick auf "Trupp hinzufügen" nicht mehr doppelt angelegt
+- AGT Scan Button und Gebäude Button bleiben normale onclick-Buttons
+- DesignFix bleibt enthalten
+- PDF-Code bleibt unverändert
 
 Öffnen:
-https://timwullen1-blip.github.io/TruppControl-/?v=android-legacy-design-v2
+https://timwullen1-blip.github.io/TruppControl-/?v=android-legacy-design-v3

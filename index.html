@@ -501,6 +501,14 @@
       .tablet-action-row { flex-direction: column; }
     }
 
+  
+    /* ==================== ANDROID BUTTON FIX V3 ==================== */
+    button,
+    [onclick] {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(239, 68, 68, 0.35);
+    }
+
   </style>
 
   <meta name="theme-color" content="#dc2626">
@@ -2373,31 +2381,7 @@ function getMissionMinutes(trupp) {
 
       updateTabletTabs(n);
     }
-
-
-    // ==================== ANDROID LEGACY TOUCH FIX ====================
-    document.addEventListener('touchend', function(event) {
-      var el = event.target;
-      while (el && el !== document && !el.getAttribute('onclick')) {
-        el = el.parentNode;
-      }
-
-      if (el && el.getAttribute && el.getAttribute('onclick')) {
-        // Old Android sometimes does not fire click reliably after touch.
-        // Let normal click run if it does; this is only a fallback.
-        setTimeout(function() {
-          try {
-            if (typeof el.onclick === 'function') {
-              el.onclick.call(el, event);
-            }
-          } catch (e) {
-            console.error('Android Legacy Touch Fehler:', e);
-          }
-        }, 10);
-      }
-    }, false);
-
-    // ==================== INITIALISIERUNG ====================
+// ==================== INITIALISIERUNG ====================
     function initDemoData() {
       // Produktivstart: keine Demo-Trupps, keine Beispiel-AGTs.
       // Der Einsatz beginnt mit leerer Lage und wird über "Trupp hinzufügen" aufgebaut.
@@ -2430,7 +2414,7 @@ function getMissionMinutes(trupp) {
         }, 1000);
       }
       
-      console.log("%cTruppControl Android Legacy DesignFix V2 gestartet! ✅", "color: #ef4444; font-size: 16px");
+      console.log("%cTruppControl Android Legacy DesignFix V3 gestartet! ✅", "color: #ef4444; font-size: 16px");
       console.log('TruppControl Funktionen geprüft:', {
         handleEndEinsatz: typeof handleEndEinsatz,
         endEinsatz: typeof endEinsatz,
@@ -2443,7 +2427,7 @@ function getMissionMinutes(trupp) {
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./service-worker.js')
-          .then(() => console.log('TruppControl Android Legacy DesignFix V2 Service Worker aktiv'))
+          .then(() => console.log('TruppControl Android Legacy DesignFix V3 Service Worker aktiv'))
           .catch(err => console.warn('Service Worker Fehler:', err));
       });
     }
