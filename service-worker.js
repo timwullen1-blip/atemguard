@@ -1,4 +1,4 @@
-const CACHE_NAME = 'truppcontrol-pdf-cleantext-fix-20260607';
+const CACHE_NAME = 'truppcontrol-pdffix-stable-20260607';
 const ASSETS = [
   './',
   './index.html',
@@ -26,6 +26,5 @@ self.addEventListener('fetch', event => {
     event.respondWith(fetch(event.request).catch(() => caches.match('./index.html')));
     return;
   }
-
   event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request)));
 });

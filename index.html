@@ -332,11 +332,11 @@
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-zinc-400 text-sm mb-1">Alarmierte Einheiten</label>
-                  <input value="LF 16/12 + RW + NEF" class="w-full bg-zinc-800 rounded-2xl px-5 py-4 focus:outline-none">
+                  <input value="LF 10/12 + RW + NEF" class="w-full bg-zinc-800 rounded-2xl px-5 py-4 focus:outline-none">
                 </div>
                 <div>
                   <label class="block text-zinc-400 text-sm mb-1">Führung</label>
-                  <input value="Zugführer Meier" class="w-full bg-zinc-800 rounded-2xl px-5 py-4 focus:outline-none">
+                  <input value="Zugführer Mänz" class="w-full bg-zinc-800 rounded-2xl px-5 py-4 focus:outline-none">
                 </div>
               </div>
             </div>
@@ -1173,7 +1173,7 @@ function getMissionMinutes(trupp) {
 
             <button onclick="scanAGT('${trupp.id}')" 
                     class="w-full mb-3 py-3 bg-emerald-600 hover:bg-emerald-700 rounded-2xl font-semibold flex items-center justify-center gap-2">
-              <i class="fas fa-qrcode"></i> AGT scannen (Demo)
+              <i class="fas fa-qrcode"></i> AGT scannen 
             </button>
 
             <!-- Gescannte Mitglieder -->
@@ -1814,7 +1814,7 @@ function getMissionMinutes(trupp) {
     function buildCompleteProtocol() {
       const protocol = [];
 
-      if (typeof einsatzLog !== 'undefined' && Array.isArray(einsatzLog)) {
+      if (typeof einsatzLog !== 'undefined' && einsatzLog && einsatzLog.length > 0) {
         einsatzLog.forEach(entry => {
           protocol.push({
             time: entry.time || '',
@@ -1826,9 +1826,9 @@ function getMissionMinutes(trupp) {
         });
       }
 
-      if (typeof trupps !== 'undefined' && Array.isArray(trupps)) {
+      if (typeof trupps !== 'undefined' && trupps && trupps.length > 0) {
         trupps.forEach(trupp => {
-          if (trupp.log && Array.isArray(trupp.log)) {
+          if (trupp.log && trupp.log.length > 0) {
             trupp.log.forEach(entry => {
               protocol.push({
                 time: entry.time || '',
@@ -1868,6 +1868,7 @@ function getMissionMinutes(trupp) {
       }
 
       if (isTabletOrMobileDevice()) {
+        // iPad/Safari blockiert Downloads oft. Deshalb immer sichtbaren Link anzeigen.
         if (modal) modal.classList.remove('hidden');
 
         try {
@@ -1891,8 +1892,8 @@ function getMissionMinutes(trupp) {
           return;
         }
 
-        if (typeof cleanPDFText !== 'function') {
-          alert('PDF-Textbereinigung fehlt. Bitte neue Version hochladen.');
+        if (typeof exportPDF !== 'function') {
+          alert('PDF-Funktion ist nicht verfügbar.');
           return;
         }
 
@@ -2075,7 +2076,7 @@ function getMissionMinutes(trupp) {
         }, 1000);
       }
       
-      console.log("%cTruppControl PDF CleanText Fix gestartet! ✅", "color: #ef4444; font-size: 16px");
+      console.log("%cTruppControl Tablet Stable V2 gestartet! ✅", "color: #ef4444; font-size: 16px");
       console.log('TruppControl Funktionen geprüft:', {
         handleEndEinsatz: typeof handleEndEinsatz,
         endEinsatz: typeof endEinsatz,
@@ -2088,7 +2089,7 @@ function getMissionMinutes(trupp) {
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./service-worker.js')
-          .then(() => console.log('TruppControl PDF CleanText Fix Service Worker aktiv'))
+          .then(() => console.log('TruppControl Stable V2 Service Worker aktiv'))
           .catch(err => console.warn('Service Worker Fehler:', err));
       });
     }

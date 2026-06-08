@@ -2,7 +2,7 @@
   "name": "TruppControl",
   "short_name": "TruppControl",
   "description": "Digitale Trupp- und Atemschutzüberwachung mit QR-Scan und PDF-Protokoll.",
-  "start_url": "./index.html?v=pdf-cleantext-fix",
+  "start_url": "./index.html?v=pdffix-stable",
   "scope": "./",
   "display": "standalone",
   "background_color": "#09090b",
